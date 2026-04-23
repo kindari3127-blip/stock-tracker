@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.env
+.DS_Store
+
+# 로컬 로그
+data/log.txt
+
+# 로컬 임시
+*.tmp
+*.bak
