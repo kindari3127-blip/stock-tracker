@@ -6,7 +6,11 @@ echo. >> data\log.txt
 echo =========================================== >> data\log.txt
 echo [%date% %time%] run >> data\log.txt
 python collect.py >> data\log.txt 2>&1
+python collect_extra.py >> data\log.txt 2>&1
 python fundamentals.py >> data\log.txt 2>&1
+python fundamentals_extra.py >> data\log.txt 2>&1
+rem business_scrape.py: 사업개요 변동 적어 일요일에만 전체 갱신 (캐시 자동 재사용)
+powershell -NoProfile -Command "if ((Get-Date).DayOfWeek -eq 'Sunday') { python business_scrape.py }" >> data\log.txt 2>&1
 python report_html.py --no-open >> data\log.txt 2>&1
 
 echo [%date% %time%] git push attempt >> data\log.txt
