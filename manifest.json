@@ -1,0 +1,20 @@
+{
+  "name": "주식추적기",
+  "short_name": "주식추적기",
+  "description": "대한민국 주식 섹터별 종가·지표·실적 리포트",
+  "start_url": "./report.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a202c",
+  "theme_color": "#1a202c",
+  "orientation": "portrait-primary",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
