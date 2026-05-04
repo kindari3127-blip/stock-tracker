@@ -1,29 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-일일 기업 리포트 5개 (Claude Haiku).
+일일 기업 리포트 5개 (Claude Haiku, Max 플랜 CLI 래퍼).
+호출은 Max 플랜 CLI 래퍼(`_claude_cli.py`)만 사용. Anthropic SDK / API 키 사용 안 함.
 선정: 추천 TOP 20 중 가치판단 점수 상위 5종목 (중복 제거).
 입력: 펀더멘털 + 가치판단 + 추천 점수 + 최근 뉴스 + 시장 총평
 출력: data/daily_reports.json
 """
 import json
-import os
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
+
+from _claude_cli import call_claude_cli, ClaudeCLIError, extract_json_object
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
     pass
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except Exception:
-    pass
-
-import anthropic
 
 HERE = Path(__file__).parent
 RECO = HERE / "data" / "recommend.json"
@@ -35,8 +28,8 @@ QUEUE = HERE / "data" / "report_queue.json"
 NEWS = HERE / "data" / "news_analysis.json"
 OVERVIEW = HERE / "data" / "market_overview.json"
 OUT = HERE / "data" / "daily_reports.json"
-MODEL = "claude-haiku-4-5-20251001"
-CACHE_DAYS = 7
+MODEL = "claude-haiku-4-5"
+CACHE_DAYS = 3
 
 SYSTEM_PROMPT = """당신은 증권사 리서치 애널리스트입니다.
 주어진 펀더멘털·가치판단·추천 점수·최근 뉴스·시장 컨텍스트만을 근거로 일일 기업 리포트를 작성합니다.
@@ -45,7 +38,7 @@ SYSTEM_PROMPT = """당신은 증권사 리서치 애널리스트입니다.
 - 데이터에 없는 사실 추가 금지. 추측·환각 절대 금지.
 - 매수·매도 추천 금지. 사실 기반 분석만.
 - 5개 섹션을 각 2~3 문장으로.
-- 출력은 정확히 다음 JSON 형식만 (다른 텍스트 금지):
+- 출력은 정확히 다음 JSON 형식만. 다른 텍스트 금지. 코드블록(```) 사용 금지. `{` 로 시작하고 `}` 로 끝나야 합니다.
 {"headline":"20자 이내 한줄 헤드라인","sections":{"value":"…","earnings":"…","products":"…","momentum":"…","outlook":"…"}}
 
 섹션 의미:
@@ -194,8 +187,6 @@ def _user_msg(item: dict, overview: dict, news_items: dict) -> str:
 
 
 def main() -> None:
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise SystemExit("ANTHROPIC_API_KEY 없음.")
     if not RECO.exists() or not VAL.exists():
         raise SystemExit("recommend.json 또는 valuation.json 없음. 먼저 빌드.")
 
@@ -220,30 +211,13 @@ def main() -> None:
             todo.append(item)
     print(f"신규 호출: {len(todo)} / 캐시 재사용: {len(reuse)}")
 
-    client = anthropic.Anthropic() if todo else None
     new_reports: list[dict] = []
     for i, item in enumerate(todo, 1):
         r = item["reco"]
         try:
             user_msg = _user_msg(item, overview, news_items)
-            resp = client.messages.create(
-                model=MODEL,
-                max_tokens=1500,
-                system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
-                messages=[
-                    {"role": "user", "content": user_msg},
-                    {"role": "assistant", "content": "{"},
-                ],
-            )
-            raw = "{" + resp.content[0].text
-            end = raw.rfind("}")
-            if end > 0:
-                raw = raw[: end + 1]
-            try:
-                parsed = json.loads(raw)
-            except json.JSONDecodeError:
-                m = re.search(r"\{.*\}", raw, re.S)
-                parsed = json.loads(m.group(0)) if m else {}
+            raw = call_claude_cli(user_msg, system=SYSTEM_PROMPT, model=MODEL, timeout=300)
+            parsed = extract_json_object(raw)
             new_reports.append({
                 "t": r["t"], "n": r["n"], "i": r.get("i", ""),
                 "c": r.get("c"), "r": r.get("r"),
@@ -255,6 +229,9 @@ def main() -> None:
                 "generated_at": datetime.now().isoformat(),
             })
             print(f"  [{i}/{len(todo)}] {r['n']:14} {parsed.get('headline', '')}")
+        except ClaudeCLIError as e:
+            new_reports.append({"t": r["t"], "n": r["n"], "error": f"CLI: {str(e)[:200]}", "source": item.get("source")})
+            print(f"  [{i}/{len(todo)}] {r['n']:14} CLI 실패: {str(e)[:80]}")
         except Exception as e:
             new_reports.append({"t": r["t"], "n": r["n"], "error": str(e)[:200], "source": item.get("source")})
             print(f"  [{i}/{len(todo)}] {r['n']:14} 실패: {str(e)[:80]}")
