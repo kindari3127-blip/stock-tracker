@@ -16,6 +16,7 @@
 - 변경 없으면 commit 건너뜀
 - **AI 분석 3종(news_analysis / market_overview / daily_reports) 모두 Max 플랜 CLI 래퍼 사용** (2026-05-04 전환). Anthropic SDK 직접 호출 제거 → API 과금 0원.
 - **작업 스케줄러 재활성화 완료** (2026-05-04, State=Ready, 매일 05:00). market_overview.py end-to-end 검증 통과 후 활성화.
+- **PWA 새로고침 시 fresh data 보장** (2026-05-04). sw.js 의 fetch 에 `cache: 'no-cache'` 추가 → HTTP·CDN 재검증 강제. report.html 의 SW 등록부에 `reg.update()` + `skipWaiting` + `controllerchange→reload` 플로우 추가, 새 SW 발견 시 PWA 재시작 없이 즉시 갱신. chart_data/chart_5y JSON 페치는 `?v=BUILD_TS` 로 cache-bust.
 
 ## 다음 행동
 

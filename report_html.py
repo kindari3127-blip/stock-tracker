@@ -7,6 +7,7 @@ data/strength.json + search_index.json + categories.json
 import json
 import sys
 import webbrowser
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -23,6 +24,7 @@ CATEGORIES = HERE / "data" / "categories.json"
 NEWS = HERE / "data" / "news_analysis.json"
 OVERVIEW = HERE / "data" / "market_overview.json"
 RECOMMEND = HERE / "data" / "recommend.json"
+BUY_TIMING = HERE / "data" / "buy_timing.json"
 CHART = HERE / "data" / "chart_data.json"
 CHART_5Y = HERE / "data" / "chart_5y.json"
 CALENDAR = HERE / "data" / "calendar.json"
@@ -252,6 +254,7 @@ main {{ padding:12px; padding-bottom:40px; }}
     <a href="#sec-sectors">강세 섹터</a>
     <a href="#sec-stocks">강세 종목</a>
     <a href="#sec-reco">추천</a>
+    <a href="#sec-buy">매수 타이밍</a>
     <a href="#sec-history">내가 본 종목</a>
     <a href="#sec-cat">카테고리</a>
   </nav>
@@ -316,6 +319,13 @@ main {{ padding:12px; padding-bottom:40px; }}
       <ul class="list" id="recoList"></ul>
     </div>
 
+    <div class="section" id="buySection" style="display:none;">
+      <a id="sec-buy"></a>
+      <h2>오늘 매수 타이밍 <span class="badge" id="buyBadge"></span></h2>
+      <div class="criteria" id="buyCriteria"></div>
+      <ul class="list" id="buyList"></ul>
+    </div>
+
     <div class="section history-section" id="historySection" style="display:none;">
       <a id="sec-history"></a>
       <h2>내가 본 종목 <span class="badge" id="histBadge"></span>
@@ -356,14 +366,33 @@ const NEWS = {news_json};
 const OVERVIEW = {overview_json};
 const CATS = {categories_json};
 const RECO = {recommend_json};
-const CHARTS = {chart_json};
+let CHARTS = {chart_json};
 const VAL = {valuation_json};
 const REPORTS = {reports_json};
-const CHARTS_5Y = {chart_5y_json};
+let CHARTS_5Y = {chart_5y_json};
+let CHARTS_LAZY_LOADED = false;
 const PER_HIST = {per_hist_json};
 const CAL = {calendar_json};
+const BUY_TIMING = {buy_timing_json};
 const HISTORY_KEY = 'st_history_v1';
 const QUEUE_KEY = 'st_report_queue_v1';
+const BUILD_TS = '{build_ts}';
+
+async function ensureChartsLoaded() {{
+  if (CHARTS_LAZY_LOADED) return;
+  try {{
+    const [r1, r2] = await Promise.all([
+      fetch(`./data/chart_data.json?v=${{BUILD_TS}}`, {{ cache: 'no-cache' }}).then(r => r.ok ? r.json() : {{}}),
+      fetch(`./data/chart_5y.json?v=${{BUILD_TS}}`, {{ cache: 'no-cache' }}).then(r => r.ok ? r.json() : {{}}),
+    ]);
+    Object.assign(CHARTS, r1);
+    Object.assign(CHARTS_5Y, r2);
+    CHARTS_LAZY_LOADED = true;
+  }} catch (e) {{
+    console.warn('chart load failed', e);
+    CHARTS_LAZY_LOADED = true;
+  }}
+}}
 
 function loadQueue() {{
   try {{ return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); }} catch (e) {{ return []; }}
@@ -371,16 +400,57 @@ function loadQueue() {{
 function saveQueue(arr) {{
   try {{ localStorage.setItem(QUEUE_KEY, JSON.stringify(arr.slice(0, 50))); }} catch (e) {{}}
 }}
-function requestReport(ticker) {{
+const PAT_KEY = 'st_github_pat_v1';
+const REPO = 'kindari3127-blip/stock-tracker';
+
+async function requestReport(ticker) {{
+  const s = SEARCH.stocks.find(x => x.t === ticker);
+  if (!s) return;
+
   const q = loadQueue();
-  if (q.includes(ticker)) {{
-    alert('이미 리포트 요청 큐에 있습니다.');
-    return;
+  if (!q.includes(ticker)) {{
+    q.push(ticker);
+    saveQueue(q);
+    renderQueueIndicator();
   }}
-  q.push(ticker);
-  saveQueue(q);
-  alert(`리포트 요청 추가됨 (큐 ${{q.length}}개). 다음 PC 빌드(매일 05:00) 시 합류됩니다.\n\n동기화 안내: 휴대폰에서 요청한 경우, PC에서 "큐 복사" 버튼으로 코드를 받아 data/report_queue.json에 붙여넣으세요.`);
-  renderQueueIndicator();
+
+  let pat = localStorage.getItem(PAT_KEY);
+  if (!pat) {{
+    const useGh = confirm('휴대폰에서도 자동 동기화하시려면 GitHub 토큰(PAT)이 필요합니다.\n\n[확인]: 토큰 입력하기\n[취소]: 로컬 큐에만 저장 (PC에서 "큐 복사" 버튼 사용)');
+    if (!useGh) return;
+    pat = prompt('GitHub PAT 입력 (Issues 권한 필요).\n\n발급: github.com/settings/tokens?type=beta → Fine-grained PAT\n→ Repository: stock-tracker → Issues: Read and write');
+    if (!pat) return;
+    localStorage.setItem(PAT_KEY, pat.trim());
+    pat = pat.trim();
+  }}
+
+  try {{
+    const res = await fetch(`https://api.github.com/repos/${{REPO}}/issues`, {{
+      method: 'POST',
+      headers: {{
+        'Accept': 'application/vnd.github+json',
+        'Authorization': 'Bearer ' + pat,
+        'Content-Type': 'application/json',
+      }},
+      body: JSON.stringify({{
+        title: `[리포트요청] ${{ticker}} ${{s.n}}`,
+        body: `ticker=${{ticker}}\\nname=${{s.n}}\\nindustry=${{s.i || '-'}}\\nrequested_at=${{new Date().toISOString()}}`,
+        labels: ['report-request'],
+      }}),
+    }});
+    if (res.ok) {{
+      const issue = await res.json();
+      alert(`✅ GitHub Issue #${{issue.number}} 생성됨.\n다음 빌드(매일 05:00) 시 자동 처리·종료됩니다.`);
+    }} else if (res.status === 401) {{
+      localStorage.removeItem(PAT_KEY);
+      alert('❌ PAT 인증 실패. 다시 입력해주세요.');
+    }} else {{
+      const err = await res.text();
+      alert(`❌ Issue 생성 실패 (${{res.status}}). 로컬 큐에는 저장됨.\n${{err.slice(0, 200)}}`);
+    }}
+  }} catch (e) {{
+    alert(`⚠️ 네트워크 오류 — 로컬 큐에 저장됨.\n${{e.message}}`);
+  }}
 }}
 function renderQueueIndicator() {{
   const q = loadQueue();
@@ -541,6 +611,27 @@ if (RECO && RECO.top && RECO.top.length) {{
   renderRecommend();
 }}
 
+if (BUY_TIMING && BUY_TIMING.top && BUY_TIMING.top.length) {{
+  $('#buySection').style.display = 'block';
+  $('#buyBadge').textContent = `TOP ${{BUY_TIMING.top.length}} · 저점 매수 후보`;
+  $('#buyCriteria').textContent = BUY_TIMING.criteria || '';
+  $('#buyList').innerHTML = BUY_TIMING.top.map((s, i) => {{
+    const rsiBadge = s.rsi != null ? `<span style="color:${{s.rsi < 35 ? '#86efac' : s.rsi > 65 ? '#fca5a5' : 'var(--muted)'}};font-size:11px;">RSI ${{s.rsi}}</span>` : '';
+    return `<li data-ticker="${{s.t}}">
+      <span class="rank">${{i+1}}</span>
+      <div class="name">
+        <div class="n1">${{s.n}}</div>
+        <div class="n2">${{s.t}} · ${{s.i || '-'}} · ${{rsiBadge}} · 5일 <span class="${{cls(s.ret_5d)}}">${{fmtPct(s.ret_5d)}}</span></div>
+      </div>
+      <div class="right">
+        <div class="price">${{fmtN(s.c)}}</div>
+        <div class="ret ${{cls(s.r)}}">${{s.r != null ? fmtPct(s.r) : ''}}</div>
+        <div class="n2" style="font-size:11px;color:#86efac;font-weight:600;">+${{s.timing}}</div>
+      </div>
+    </li>`;
+  }}).join('');
+}}
+
 if (CAL && CAL.events && CAL.events.length) {{
   $('#calendarSection').style.display = 'block';
   const today = new Date(); today.setHours(0,0,0,0);
@@ -651,6 +742,11 @@ function buildSparkline(closes, w, h) {{
   return `<svg viewBox="0 0 ${{w}} ${{h}}" width="${{w}}" height="${{h}}" style="display:inline-block;vertical-align:middle;flex-shrink:0;"><path d="${{points}}" stroke="${{stroke}}" stroke-width="1.2" fill="none"/></svg>`;
 }}
 
+async function renderHistoryAsync() {{
+  await ensureChartsLoaded();
+  renderHistory();
+}}
+
 function renderHistory() {{
   const hist = loadHistory();
   const sec = $('#historySection');
@@ -717,6 +813,7 @@ $('#copyQueueBtn').addEventListener('click', async e => {{
 
 renderHistory();
 renderQueueIndicator();
+ensureChartsLoaded().then(() => renderHistory());
 
 function buildValuationCard(ticker) {{
   if (!VAL || !VAL.items) return '';
@@ -1004,6 +1101,9 @@ function buildChartSection(ticker) {{
     <span>
       <button class="ch-tab active" data-mode="60d" data-tk="${{ticker}}">60일</button>
       ${{main5y ? `<button class="ch-tab" data-mode="5y" data-tk="${{ticker}}">5년</button>` : ''}}
+      <label style="font-size:10px; color:var(--muted); margin-left:6px;">
+        <input type="checkbox" class="ch-peers" data-tk="${{ticker}}"> 비교선
+      </label>
     </span></h4>
     <div style="font-size:11px; color:var(--muted); padding:4px 0 6px; border-bottom:1px dashed var(--line); margin-bottom:6px;">
       <b style="color:var(--text);">${{today}}</b> 기준 ·
@@ -1017,11 +1117,11 @@ function buildChartSection(ticker) {{
     <div class="chart-legend" id="chartLegend-${{ticker}}"></div>
     <div id="signalSum-${{ticker}}" style="font-size:11px; color:var(--muted); margin-top:6px;"></div>
   </div>`;
-  setTimeout(() => renderPriceChart(ticker, '60d'), 0);
+  setTimeout(() => renderPriceChart(ticker, '60d', false), 0);
   return html;
 }}
 
-function renderPriceChart(ticker, mode) {{
+function renderPriceChart(ticker, mode, showPeers) {{
   const target = $('#chartBody-' + ticker);
   if (!target) return;
   const data = mode === '5y' ? CHARTS_5Y[ticker] : CHARTS[ticker];
@@ -1035,7 +1135,7 @@ function renderPriceChart(ticker, mode) {{
   const s = SEARCH.stocks.find(x => x.t === ticker);
   const ind = s ? s.i : '';
   const peerData = mode === '5y' ? CHARTS_5Y : CHARTS;
-  const peers = ind
+  const peers = (showPeers && ind)
     ? SEARCH.stocks
         .filter(x => x.i === ind && x.t !== ticker && peerData[x.t])
         .sort((a, b) => b.m - a.m)
@@ -1098,7 +1198,18 @@ document.addEventListener('click', e => {{
   const wrap = ch.closest('.chart-wrap');
   wrap.querySelectorAll('.ch-tab').forEach(t => t.classList.remove('active'));
   ch.classList.add('active');
-  renderPriceChart(ch.dataset.tk, ch.dataset.mode);
+  const peerCb = wrap.querySelector('.ch-peers');
+  renderPriceChart(ch.dataset.tk, ch.dataset.mode, peerCb && peerCb.checked);
+}});
+
+document.addEventListener('change', e => {{
+  const cb = e.target.closest('input.ch-peers');
+  if (!cb) return;
+  e.stopPropagation();
+  const wrap = cb.closest('.chart-wrap');
+  const activeTab = wrap.querySelector('.ch-tab.active');
+  const mode = activeTab ? activeTab.dataset.mode : '60d';
+  renderPriceChart(cb.dataset.tk, mode, cb.checked);
 }});
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -1308,10 +1419,15 @@ document.addEventListener('click', e => {{
   if (elInd) {{ openIndustry(elInd.dataset.industry); return; }}
 }});
 
-function openStock(ticker) {{
+async function openStock(ticker) {{
   const s = SEARCH.stocks.find(x => x.t === ticker);
   if (!s) return;
   recordHistory(ticker);
+  await ensureChartsLoaded();
+  if ($('#detailBody')) {{
+    const exists = $('#chartBody-' + ticker);
+    if (exists) renderPriceChart(ticker, '60d');
+  }}
   const f = FUND[ticker] || {{}};
   const news = (NEWS && NEWS.items) ? NEWS.items[ticker] : null;
 
@@ -1367,6 +1483,30 @@ function openStock(ticker) {{
     html += '</div>';
   }}
 
+  if (s.i) {{
+    const related = SEARCH.stocks
+      .filter(x => x.i === s.i && x.t !== ticker)
+      .sort((a, b) => (b.m || 0) - (a.m || 0))
+      .slice(0, 8);
+    if (related.length) {{
+      html += `<div class="val-card" style="border-left-color:#34d399;">
+        <div class="head" style="color:#34d399;">관련 종목 — ${{s.i}}</div>`;
+      related.forEach(rel => {{
+        html += `<div data-ticker="${{rel.t}}" style="padding:6px 0; border-bottom:1px dashed var(--line); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13px; font-weight:600;">${{rel.n}}</div>
+            <div style="font-size:11px; color:var(--muted);">${{rel.t}} · ${{fmtMcap(rel.m)}}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:12px; font-weight:600;">${{fmtN(rel.c)}}</div>
+            <div class="${{cls(rel.r)}}" style="font-size:12px; font-weight:700;">${{fmtPct(rel.r)}}</div>
+          </div>
+        </div>`;
+      }});
+      html += '</div>';
+    }}
+  }}
+
   html += `<div style="margin-top:12px;font-size:12px;">
       <a href="https://finance.naver.com/item/main.naver?code=${{s.t}}" target="_blank" rel="noopener" style="color:var(--accent);">네이버 금융 →</a>
     </div>`;
@@ -1404,7 +1544,28 @@ $('#detailClose').addEventListener('click', hideDetail);
 $('#backdrop').addEventListener('click', hideDetail);
 
 if ('serviceWorker' in navigator) {{
-  navigator.serviceWorker.register('./sw.js').catch(() => {{}});
+  let _swReloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {{
+    // 새 SW가 페이지를 인계받으면 한 번만 새로고침해서 fresh content 표시
+    if (_swReloaded) return;
+    _swReloaded = true;
+    location.reload();
+  }});
+  navigator.serviceWorker.register('./sw.js').then((reg) => {{
+    // 페이지 열 때마다 origin 확인해서 새 SW 있으면 가져옴
+    reg.update().catch(() => {{}});
+    reg.addEventListener('updatefound', () => {{
+      const sw = reg.installing;
+      if (!sw) return;
+      sw.addEventListener('statechange', () => {{
+        // 기존 컨트롤러가 있는 상태에서 새 SW가 installed = waiting 단계
+        // → skipWaiting 보내서 즉시 활성화 (controllerchange가 위에서 reload 트리거)
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) {{
+          sw.postMessage('skipWaiting');
+        }}
+      }});
+    }});
+  }}).catch(() => {{}});
 }}
 </script>
 </body>
@@ -1428,8 +1589,10 @@ def build() -> None:
     reports = _load_json(DAILY_REPORTS, {})
     chart_5y = _load_json(CHART_5Y, {})
     cal = _load_json(CALENDAR, {})
+    buy_timing = _load_json(BUY_TIMING, {})
     per_hist = _load_per_history()
 
+    build_ts = datetime.now().strftime("%Y%m%d%H%M%S")
     html = HTML_TEMPLATE.format(
         ref_label=strength.get("ref_label", ""),
         strength_json=json.dumps(strength, ensure_ascii=False),
@@ -1439,12 +1602,14 @@ def build() -> None:
         overview_json=json.dumps(overview, ensure_ascii=False),
         categories_json=json.dumps(categories, ensure_ascii=False),
         recommend_json=json.dumps(recommend, ensure_ascii=False),
-        chart_json=json.dumps(chart, ensure_ascii=False),
+        chart_json="{}",
         valuation_json=json.dumps(valuation, ensure_ascii=False),
         reports_json=json.dumps(reports, ensure_ascii=False),
-        chart_5y_json=json.dumps(chart_5y, ensure_ascii=False),
+        chart_5y_json="{}",
         per_hist_json=json.dumps(per_hist, ensure_ascii=False),
         calendar_json=json.dumps(cal, ensure_ascii=False),
+        buy_timing_json=json.dumps(buy_timing, ensure_ascii=False),
+        build_ts=build_ts,
     )
     OUT.write_text(html, encoding="utf-8")
     size_kb = OUT.stat().st_size / 1024
