@@ -31,6 +31,7 @@ CALENDAR = HERE / "data" / "calendar.json"
 VALUATION = HERE / "data" / "valuation.json"
 DAILY_REPORTS = HERE / "data" / "daily_reports.json"
 FUND = HERE / "data" / "fundamentals.csv"
+CASHFLOW = HERE / "data" / "cashflow.csv"
 OUT = HERE / "report.html"
 
 
@@ -40,7 +41,7 @@ def _load_fundamentals() -> dict:
     df = pd.read_csv(FUND, dtype={"ticker": str})
     cols = ["per", "pbr", "eps", "bps", "roe", "op_margin", "net_margin",
             "dividend_yield", "debt_ratio", "per_est", "roe_est"]
-    out = {}
+    out: dict = {}
     for _, r in df.iterrows():
         t = str(r.get("ticker") or "").zfill(6)
         if not t:
@@ -55,7 +56,68 @@ def _load_fundamentals() -> dict:
                     pass
         if d:
             out[t] = d
+
+    # cashflow.csv 병합 — 추적 종목 전부 + 추적 외 PFR Top 200 (모달 stat-grid 노출용)
+    if CASHFLOW.exists():
+        cf = pd.read_csv(CASHFLOW, dtype={"ticker": str})
+        cf["ticker"] = cf["ticker"].str.zfill(6)
+        cf = cf.drop_duplicates(subset=["ticker"], keep="first")
+        cf_valid = cf[cf["pfr"].notna() & (cf["pfr"] > 0)
+                      & cf["fcf"].notna() & (cf["fcf"] > 0)]
+        top_pfr_tickers = set(cf_valid.nsmallest(200, "pfr")["ticker"].tolist())
+        for _, r in cf.iterrows():
+            t = str(r.get("ticker") or "").zfill(6)
+            if t not in out and t not in top_pfr_tickers:
+                continue
+            slot = out.setdefault(t, {})
+            for src, dst in [("pfr", "pfr"), ("fcf", "fcf"), ("ocf", "ocf"),
+                             ("capex", "capex"), ("marcap", "marcap")]:
+                v = r.get(src)
+                if pd.notna(v):
+                    try:
+                        slot[dst] = float(v)
+                    except Exception:
+                        pass
+            v = r.get("fy")
+            if pd.notna(v):
+                try:
+                    slot["fy"] = int(v)
+                except Exception:
+                    pass
+            # 추적 외에는 이름·섹터도 fund 에 보관 (openStock 폴백용)
+            if t not in out or "name" not in slot:
+                nm = r.get("name")
+                sc = r.get("sector")
+                if pd.notna(nm):
+                    slot["name"] = str(nm)
+                if pd.notna(sc):
+                    slot["sector"] = str(sc)
     return out
+
+
+def _build_pfr_ranking(low_n: int = 200) -> dict:
+    """cashflow.csv 직접 읽고 KRX 전체 풀에서 PFR 저평가 Top N. 종목 메타 포함."""
+    if not CASHFLOW.exists():
+        return {"low": [], "count": 0, "fy": ""}
+    df = pd.read_csv(CASHFLOW, dtype={"ticker": str})
+    df["ticker"] = df["ticker"].str.zfill(6)
+    df = df.drop_duplicates(subset=["ticker"], keep="first")
+    df = df[df["pfr"].notna() & (df["pfr"] > 0) & df["fcf"].notna() & (df["fcf"] > 0)]
+
+    def _pack(row) -> dict:
+        return {
+            "t": row["ticker"],
+            "n": row["name"],
+            "s": row.get("sector") if pd.notna(row.get("sector")) else "",
+            "m": float(row["marcap"]) if pd.notna(row.get("marcap")) else None,
+            "pfr": round(float(row["pfr"]), 2),
+        }
+
+    low = [_pack(r) for _, r in df.nsmallest(low_n, "pfr").iterrows()]
+    fy = ""
+    if len(df) and pd.notna(df.iloc[0].get("fy")):
+        fy = str(int(df.iloc[0]["fy"]))
+    return {"low": low, "count": len(df), "fy": fy}
 
 
 def _load_per_history() -> dict:
@@ -143,6 +205,23 @@ main {{ padding:12px; padding-bottom:40px; }}
 .up {{ color:var(--up); }}
 .down {{ color:var(--down); }}
 .flat {{ color:var(--flat); }}
+/* PFR 색상 — 낮을수록 저평가(녹) / 높을수록 고평가(빨) */
+.pfr-vlow {{ color:#22c55e; }}   /* < 10 */
+.pfr-low  {{ color:#86efac; }}   /* < 20 */
+.pfr-mid  {{ color:#fbbf24; }}   /* < 40 */
+.pfr-high {{ color:#f87171; }}   /* >= 40 */
+.pfr-tag {{ font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;
+  background:rgba(255,255,255,0.06); margin-left:6px; vertical-align:middle; }}
+.pfr-col {{ border:1px solid var(--line); border-radius:8px; background:var(--panel); padding:8px; }}
+.pfr-col ol {{ list-style:none; padding:0; margin:0; counter-reset:pfrn; }}
+.pfr-col li {{ counter-increment:pfrn; display:flex; align-items:center; padding:6px 4px;
+  border-top:1px dashed var(--line); cursor:pointer; gap:8px; }}
+.pfr-col li:first-child {{ border-top:none; }}
+.pfr-col li::before {{ content:counter(pfrn); width:18px; text-align:center; color:var(--muted);
+  font-size:11px; font-weight:600; }}
+.pfr-col .pn {{ flex:1; min-width:0; font-size:13px; font-weight:600;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+.pfr-col .pv {{ font-size:13px; font-weight:700; min-width:50px; text-align:right; }}
 .empty {{ padding:20px; color:var(--muted); text-align:center; }}
 .leaders {{ margin-top:4px; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
 .leaders .ld-up {{ color:#fca5a5; }}
@@ -254,6 +333,7 @@ main {{ padding:12px; padding-bottom:40px; }}
     <a href="#sec-sectors">강세 섹터</a>
     <a href="#sec-stocks">강세 종목</a>
     <a href="#sec-reco">추천</a>
+    <a href="#sec-pfr">PFR</a>
     <a href="#sec-buy">매수 타이밍</a>
     <a href="#sec-history">내가 본 종목</a>
     <a href="#sec-cat">카테고리</a>
@@ -319,6 +399,15 @@ main {{ padding:12px; padding-bottom:40px; }}
       <ul class="list" id="recoList"></ul>
     </div>
 
+    <div class="section" id="pfrSection" style="display:none;">
+      <a id="sec-pfr"></a>
+      <h2>PFR 저평가 Top 200 <span class="badge" id="pfrBadge"></span></h2>
+      <div class="criteria">PFR = 시가총액 ÷ FCF (영업CF − CAPEX). 낮을수록 현금흐름 대비 저평가. KRX 시총 ≥ 1,000억 · FY {pfr_fy} 기준</div>
+      <div class="pfr-col">
+        <ol id="pfrLowList"></ol>
+      </div>
+    </div>
+
     <div class="section" id="buySection" style="display:none;">
       <a id="sec-buy"></a>
       <h2>오늘 매수 타이밍 <span class="badge" id="buyBadge"></span></h2>
@@ -366,6 +455,7 @@ const NEWS = {news_json};
 const OVERVIEW = {overview_json};
 const CATS = {categories_json};
 const RECO = {recommend_json};
+const PFR_RANK = {pfr_rank_json};
 let CHARTS = {chart_json};
 const VAL = {valuation_json};
 const REPORTS = {reports_json};
@@ -475,11 +565,23 @@ const fmtN = (v) => v == null ? '-' : Number(v).toLocaleString('ko-KR');
 const fmtPct = (v) => v == null ? '-' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
 const cls = (v) => v > 0 ? 'up' : v < 0 ? 'down' : 'flat';
 const fmtMcap = (v) => {{
-  if (!v) return '-';
+  if (v == null || v === '') return '-';
   v = Number(v);
-  if (v >= 1e12) return (v/1e12).toFixed(1).replace(/\.0$/,'') + '조';
-  if (v >= 1e8) return (v/1e8).toFixed(0) + '억';
+  const sign = v < 0 ? '-' : '';
+  const a = Math.abs(v);
+  if (a >= 1e12) return sign + (a/1e12).toFixed(1).replace(/\.0$/,'') + '조';
+  if (a >= 1e8) return sign + (a/1e8).toFixed(0) + '억';
   return v.toLocaleString('ko-KR');
+}};
+// PFR 색상: 낮을수록 저평가(녹색) → 높을수록 고평가(빨강)
+const pfrCls = (v) => {{
+  if (v == null) return 'flat';
+  v = Number(v);
+  if (v <= 0) return 'flat';
+  if (v < 10) return 'pfr-vlow';
+  if (v < 20) return 'pfr-low';
+  if (v < 40) return 'pfr-mid';
+  return 'pfr-high';
 }};
 
 if (OVERVIEW && OVERVIEW.headline) {{
@@ -610,6 +712,22 @@ if (RECO && RECO.top && RECO.top.length) {{
   $('#recoSection').style.display = 'block';
   renderRecommend();
 }}
+
+// PFR 저평가 Top 200 — KRX 전체 풀(시총 ≥ 1000억) 기준. 추적 외도 모달로
+function renderPfrRanking() {{
+  if (!PFR_RANK || !PFR_RANK.low || !PFR_RANK.low.length) return;
+  $('#pfrSection').style.display = 'block';
+  $('#pfrBadge').textContent = `KRX 풀 ${{PFR_RANK.count}}종목 · FY ${{PFR_RANK.fy || ''}}`;
+  const trackedSet = new Set(SEARCH.stocks.map(x => x.t));
+  $('#pfrLowList').innerHTML = PFR_RANK.low.map(r => {{
+    const tracked = trackedSet.has(r.t);
+    return `<li data-ticker="${{r.t}}">
+      <span class="pn">${{r.n}}<span class="n2" style="display:block;font-size:11px;color:var(--muted);font-weight:400;">${{r.t}} · ${{r.s || '-'}} · ${{fmtMcap(r.m)}}${{tracked ? '' : ' · 추적외'}}</span></span>
+      <span class="pv ${{pfrCls(r.pfr)}}">${{r.pfr}}</span>
+    </li>`;
+  }}).join('');
+}}
+renderPfrRanking();
 
 if (BUY_TIMING && BUY_TIMING.top && BUY_TIMING.top.length) {{
   $('#buySection').style.display = 'block';
@@ -1387,11 +1505,14 @@ function doSearch(q) {{
   if (stocks.length) {{
     html += `<div class="search-section-h">종목 ${{stocks.length}}개${{stocks.length > 100 ? ' (상위 100개)' : ''}}</div><ul class="list">`;
     stocksLimit.forEach(s => {{
+      const f = FUND[s.t] || {{}};
+      const pfrTxt = (f.pfr != null) ? `<span class="pfr-tag ${{pfrCls(f.pfr)}}">PFR ${{f.pfr}}</span>` : '';
+      const fwdTxt = (f.per_est != null) ? ` · F-PER ${{f.per_est}}` : '';
       html += `<li data-ticker="${{s.t}}">
         <span class="rank"></span>
         <div class="name">
-          <div class="n1">${{s.n}}</div>
-          <div class="n2">${{s.t}} · ${{s.i || '-'}} · ${{fmtMcap(s.m)}}</div>
+          <div class="n1">${{s.n}} ${{pfrTxt}}</div>
+          <div class="n2">${{s.t}} · ${{s.i || '-'}} · ${{fmtMcap(s.m)}}${{fwdTxt}}</div>
         </div>
         <div class="right">
           <div class="price">${{fmtN(s.c)}}</div>
@@ -1420,51 +1541,87 @@ document.addEventListener('click', e => {{
 }});
 
 async function openStock(ticker) {{
-  const s = SEARCH.stocks.find(x => x.t === ticker);
-  if (!s) return;
-  recordHistory(ticker);
+  let s = SEARCH.stocks.find(x => x.t === ticker);
+  const isTracked = !!s;
   await ensureChartsLoaded();
+
+  if (!s) {{
+    // 추적 외 종목 — FUND/PFR_RANK/CHARTS 로 폴백 객체 생성
+    const f0 = FUND[ticker] || {{}};
+    const pr = (PFR_RANK && PFR_RANK.low || []).find(x => x.t === ticker);
+    if (!pr && !f0.name) return;
+    s = {{
+      t: ticker,
+      n: f0.name || (pr && pr.n) || ticker,
+      i: f0.sector || (pr && pr.s) || '-',
+      m: f0.marcap || (pr && pr.m) || null,
+      c: null, r: null, a: null, mk: '-',
+    }};
+    if (CHARTS && CHARTS[ticker] && CHARTS[ticker].closes && CHARTS[ticker].closes.length) {{
+      const cs = CHARTS[ticker].closes;
+      s.c = cs[cs.length - 1];
+      if (cs.length >= 2) s.r = ((cs[cs.length - 1] / cs[cs.length - 2]) - 1) * 100;
+    }}
+  }}
+  recordHistory(ticker);
   if ($('#detailBody')) {{
     const exists = $('#chartBody-' + ticker);
     if (exists) renderPriceChart(ticker, '60d');
   }}
   const f = FUND[ticker] || {{}};
-  const news = (NEWS && NEWS.items) ? NEWS.items[ticker] : null;
+  const news = (NEWS && NEWS.items && isTracked) ? NEWS.items[ticker] : null;
 
   const inQueue = loadQueue().includes(ticker);
   const hasReport = REPORTS && REPORTS.reports && REPORTS.reports.find(r => r.t === ticker && r.headline);
-  let html = `<h3>${{s.n}} <span style="font-size:13px;color:var(--muted);font-weight:400;">${{s.t}}</span></h3>
+  const offTrackTag = isTracked ? '' : ' <span style="font-size:11px;background:var(--panel2);color:var(--muted);padding:2px 6px;border-radius:4px;font-weight:500;">추적외</span>';
+  let html = `<h3>${{s.n}} <span style="font-size:13px;color:var(--muted);font-weight:400;">${{s.t}}</span>${{offTrackTag}}</h3>
     <div class="sub">${{s.i || '-'}} · ${{s.mk || ''}}
-      ${{!hasReport ? `<button onclick="requestReport('${{ticker}}')" style="margin-left:8px;padding:3px 9px;font-size:11px;background:${{inQueue ? 'var(--panel)' : 'var(--accent)'}};color:${{inQueue ? 'var(--muted)' : '#0f172a'}};border:1px solid var(--accent);border-radius:4px;cursor:${{inQueue ? 'default' : 'pointer'}};font-weight:600;" ${{inQueue ? 'disabled' : ''}}>${{inQueue ? '✓ 큐에 있음' : '📋 리포트 요청'}}</button>` : ''}}
+      ${{isTracked && !hasReport ? `<button onclick="requestReport('${{ticker}}')" style="margin-left:8px;padding:3px 9px;font-size:11px;background:${{inQueue ? 'var(--panel)' : 'var(--accent)'}};color:${{inQueue ? 'var(--muted)' : '#0f172a'}};border:1px solid var(--accent);border-radius:4px;cursor:${{inQueue ? 'default' : 'pointer'}};font-weight:600;" ${{inQueue ? 'disabled' : ''}}>${{inQueue ? '✓ 큐에 있음' : '📋 리포트 요청'}}</button>` : ''}}
     </div>`;
-  html += buildTrackerBar(ticker);
-  const todayISO = new Date().toISOString().slice(0, 10);
-  html += `<div class="bench-wrap">
-    <span class="label">기준일 변동:</span>
-    <input type="date" id="benchDate-${{ticker}}" max="${{todayISO}}">
-    <span id="benchOut-${{ticker}}" style="flex:1; min-width:0;"></span>
-  </div>`;
-  setTimeout(() => setupBench(ticker), 0);
+  if (isTracked) {{
+    html += buildTrackerBar(ticker);
+    const todayISO = new Date().toISOString().slice(0, 10);
+    html += `<div class="bench-wrap">
+      <span class="label">기준일 변동:</span>
+      <input type="date" id="benchDate-${{ticker}}" max="${{todayISO}}">
+      <span id="benchOut-${{ticker}}" style="flex:1; min-width:0;"></span>
+    </div>`;
+    setTimeout(() => setupBench(ticker), 0);
+  }}
   html += `<div class="stat-grid">
-      <div class="stat"><div class="lab">종가</div><div class="val">${{fmtN(s.c)}}원</div></div>
-      <div class="stat"><div class="lab">등락률</div><div class="val ${{cls(s.r)}}">${{fmtPct(s.r)}}</div></div>
+      <div class="stat"><div class="lab">종가</div><div class="val">${{s.c != null ? fmtN(s.c) + '원' : '-'}}</div></div>
+      <div class="stat"><div class="lab">등락률</div><div class="val ${{cls(s.r)}}">${{s.r != null ? fmtPct(s.r) : '-'}}</div></div>
       <div class="stat"><div class="lab">시총</div><div class="val">${{fmtMcap(s.m)}}</div></div>
-      <div class="stat"><div class="lab">거래대금</div><div class="val">${{fmtMcap(s.a)}}</div></div>`;
+      ${{isTracked ? `<div class="stat"><div class="lab">거래대금</div><div class="val">${{fmtMcap(s.a)}}</div></div>` : ''}}`;
   const fmap = [
-    ['per','PER'], ['pbr','PBR'], ['roe','ROE(%)'], ['eps','EPS'],
+    ['per','PER'], ['per_est','선행PER'], ['pfr','PFR'],
+    ['pbr','PBR'], ['roe','ROE(%)'], ['eps','EPS'],
     ['op_margin','영업이익률(%)'], ['net_margin','순이익률(%)'],
     ['dividend_yield','배당수익률(%)'], ['debt_ratio','부채비율(%)'],
-    ['per_est','선행PER'], ['roe_est','선행ROE(%)']
+    ['roe_est','선행ROE(%)']
   ];
   fmap.forEach(([k, lab]) => {{
     if (f[k] != null) {{
-      html += `<div class="stat"><div class="lab">${{lab}}</div><div class="val">${{f[k]}}</div></div>`;
+      const cls2 = k === 'pfr' ? ` ${{pfrCls(f[k])}}` : '';
+      html += `<div class="stat"><div class="lab">${{lab}}</div><div class="val${{cls2}}">${{f[k]}}</div></div>`;
     }}
   }});
+  // FCF/시총/CAPEX 부가 정보
+  if (f.fcf != null) {{
+    html += `<div class="stat"><div class="lab">FCF (${{f.fy || ''}})</div><div class="val">${{fmtMcap(f.fcf)}}</div></div>`;
+  }}
+  if (f.ocf != null) {{
+    html += `<div class="stat"><div class="lab">영업CF</div><div class="val">${{fmtMcap(f.ocf)}}</div></div>`;
+  }}
+  if (f.capex != null) {{
+    html += `<div class="stat"><div class="lab">CAPEX</div><div class="val">${{fmtMcap(f.capex)}}</div></div>`;
+  }}
   html += '</div>';
 
-  html += buildValuationCard(ticker);
-  html += buildReportCard(ticker);
+  if (isTracked) {{
+    html += buildValuationCard(ticker);
+    html += buildReportCard(ticker);
+  }}
   html += buildChartSection(ticker);
 
   if (news && (news.summary || (news.reasons && news.reasons.length))) {{
@@ -1580,6 +1737,8 @@ def build() -> None:
     strength = json.loads(STRENGTH.read_text(encoding="utf-8"))
     search = json.loads(SEARCH.read_text(encoding="utf-8"))
     fund = _load_fundamentals()
+    pfr_rank = _build_pfr_ranking()
+    pfr_fy = pfr_rank.get("fy", "")
     news = _load_json(NEWS, {})
     overview = _load_json(OVERVIEW, {})
     categories = _load_json(CATEGORIES, {})
@@ -1602,6 +1761,8 @@ def build() -> None:
         overview_json=json.dumps(overview, ensure_ascii=False),
         categories_json=json.dumps(categories, ensure_ascii=False),
         recommend_json=json.dumps(recommend, ensure_ascii=False),
+        pfr_rank_json=json.dumps(pfr_rank, ensure_ascii=False),
+        pfr_fy=pfr_fy,
         chart_json="{}",
         valuation_json=json.dumps(valuation, ensure_ascii=False),
         reports_json=json.dumps(reports, ensure_ascii=False),

@@ -60,8 +60,20 @@ def build() -> None:
     fund_tickers = set(fund["ticker"].tolist())
     top_by_mcap = sorted(search.get("stocks", []), key=lambda s: s.get("m", 0) or 0, reverse=True)[:CHART_POOL_TOP_N]
     chart_pool = {s["t"] for s in top_by_mcap}
+
+    # PFR 저평가 Top 200 도 차트 풀에 포함 (추적 외 종목 모달에서 차트 표시 위함)
+    pfr_pool: set[str] = set()
+    cf_path = HERE / "data" / "cashflow.csv"
+    if cf_path.exists():
+        cf = pd.read_csv(cf_path, dtype={"ticker": str})
+        cf["ticker"] = cf["ticker"].str.zfill(6)
+        cf = cf.drop_duplicates(subset=["ticker"], keep="first")
+        cf = cf[cf["pfr"].notna() & (cf["pfr"] > 0) & cf["fcf"].notna() & (cf["fcf"] > 0)]
+        pfr_pool = set(cf.nsmallest(200, "pfr")["ticker"].tolist())
+        chart_pool |= pfr_pool
+
     tickers = sorted(fund_tickers | chart_pool)
-    print(f"풀: 펀더멘털 {len(fund_tickers)} ∪ 시총상위 {len(chart_pool)} = {len(tickers)}종목")
+    print(f"풀: 펀더멘털 {len(fund_tickers)} ∪ 시총상위 {CHART_POOL_TOP_N} ∪ PFR저평가 {len(pfr_pool)} = {len(tickers)}종목")
 
     with Progress(
         SpinnerColumn(),
@@ -190,12 +202,37 @@ def build() -> None:
             },
         })
 
+    all_rows: list[dict] = []
+    for t, r in df_p.iterrows():
+        all_rows.append({
+            "t": t,
+            "n": name_map.get(t, ""),
+            "i": (px_map.get(t, {}) or {}).get("i", ""),
+            "scores": {
+                "momentum": round(float(r["mom_score"]), 2),
+                "fundamental": round(float(r["fund_score"]), 2),
+                "chart": round(float(r["chart_score"]), 2),
+                "rotation": round(float(r["rot_score"]), 2),
+            },
+            "total": round(float(r["total"]), 2),
+            "metrics": {
+                "ret_5d": round(float(r["ret_5d"]), 2),
+                "ret_20d": round(float(r["ret_20d"]), 2),
+                "above_ma20": round(float(r["above_ma20"]), 2),
+                "above_ma60": round(float(r["above_ma60"]), 2),
+                "vol_ratio": round(float(r["vol_ratio"]), 2),
+                "roe": None if pd.isna(r["roe_v"]) else round(float(r["roe_v"]), 2),
+                "eps_g": None if pd.isna(r["eps_g"]) else round(float(r["eps_g"]), 2),
+            },
+        })
+
     OUT_RECO.write_text(json.dumps({
         "ref_date": strength.get("ref_date"),
         "ref_label": strength.get("ref_label"),
         "weights": {"momentum": 0.30, "fundamental": 0.25, "chart": 0.25, "rotation": 0.20},
         "pool_size": int(len(df_p)),
         "top": top,
+        "all": all_rows,
     }, ensure_ascii=False), encoding="utf-8")
     OUT_CHART.write_text(json.dumps(chart, ensure_ascii=False), encoding="utf-8")
     print(f"추천 저장: {OUT_RECO} (TOP 20 / 풀 {len(df_p)})")
