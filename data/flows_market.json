@@ -1,0 +1,107 @@
+{
+  "updated": "2026-07-07 09:00",
+  "unit": "백만원",
+  "scope": "KOSPI 기준 시장 전체",
+  "rows": [
+    {
+      "date": "2026-07-06",
+      "individual": 26829,
+      "foreign": -13144,
+      "institute": -14618,
+      "inst_detail": -14299,
+      "etc_corp": -129,
+      "fin_inv": -516,
+      "pension": 933
+    },
+    {
+      "date": "2026-07-03",
+      "individual": -22942,
+      "foreign": -21750,
+      "institute": 44079,
+      "inst_detail": 30153,
+      "etc_corp": 1040,
+      "fin_inv": 11761,
+      "pension": 614
+    },
+    {
+      "date": "2026-07-02",
+      "individual": 62413,
+      "foreign": -43706,
+      "institute": -20825,
+      "inst_detail": -3928,
+      "etc_corp": 556,
+      "fin_inv": -17424,
+      "pension": 2118
+    },
+    {
+      "date": "2026-07-01",
+      "individual": 17370,
+      "foreign": -17028,
+      "institute": -700,
+      "inst_detail": -983,
+      "etc_corp": 482,
+      "fin_inv": 1457,
+      "pension": 359
+    },
+    {
+      "date": "2026-06-30",
+      "individual": 8401,
+      "foreign": -37992,
+      "institute": 29332,
+      "inst_detail": 16121,
+      "etc_corp": 925,
+      "fin_inv": 12623,
+      "pension": 259
+    },
+    {
+      "date": "2026-06-29",
+      "individual": 45975,
+      "foreign": -77332,
+      "institute": 29327,
+      "inst_detail": 30270,
+      "etc_corp": 40,
+      "fin_inv": -1419,
+      "pension": 2030
+    },
+    {
+      "date": "2026-06-26",
+      "individual": 81919,
+      "foreign": -42906,
+      "institute": -41224,
+      "inst_detail": -19935,
+      "etc_corp": -302,
+      "fin_inv": -20491,
+      "pension": 2211
+    },
+    {
+      "date": "2026-06-25",
+      "individual": -24136,
+      "foreign": -8754,
+      "institute": 33244,
+      "inst_detail": 24024,
+      "etc_corp": -1082,
+      "fin_inv": 10293,
+      "pension": -354
+    },
+    {
+      "date": "2026-06-24",
+      "individual": 26312,
+      "foreign": -46546,
+      "institute": 19095,
+      "inst_detail": 17479,
+      "etc_corp": -103,
+      "fin_inv": 1524,
+      "pension": 1138
+    },
+    {
+      "date": "2026-06-23",
+      "individual": 85910,
+      "foreign": -42047,
+      "institute": -44760,
+      "inst_detail": -20908,
+      "etc_corp": -1018,
+      "fin_inv": -19662,
+      "pension": 898
+    }
+  ]
+}

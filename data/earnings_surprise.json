@@ -1,0 +1,509 @@
+{
+  "updated": "2026-07-07 06:02",
+  "count": 169,
+  "with_date": 169,
+  "top_positive": [
+    {
+      "t": "071320",
+      "n": "지역난방공사",
+      "q_period": "2026.03",
+      "op_q": 3202.0,
+      "op_q_est": -246.0,
+      "surprise_pct": 1401.6,
+      "announce_date": "2026-05-13",
+      "price_reaction_pct": -3.23
+    },
+    {
+      "t": "003490",
+      "n": "대한항공",
+      "q_period": "2026.03",
+      "op_q": 5174.0,
+      "op_q_est": -2290.0,
+      "surprise_pct": 325.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -1.83
+    },
+    {
+      "t": "034220",
+      "n": "LG디스플레이",
+      "q_period": "2026.03",
+      "op_q": 1467.0,
+      "op_q_est": -952.0,
+      "surprise_pct": 254.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -1.24
+    },
+    {
+      "t": "020000",
+      "n": "한섬",
+      "q_period": "2026.03",
+      "op_q": 365.0,
+      "op_q_est": 110.0,
+      "surprise_pct": 231.8,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -10.91
+    },
+    {
+      "t": "089590",
+      "n": "제주항공",
+      "q_period": "2026.03",
+      "op_q": 690.0,
+      "op_q_est": -557.0,
+      "surprise_pct": 223.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -0.39
+    },
+    {
+      "t": "272450",
+      "n": "진에어",
+      "q_period": "2026.03",
+      "op_q": 576.0,
+      "op_q_est": -707.0,
+      "surprise_pct": 181.5,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.2
+    },
+    {
+      "t": "080160",
+      "n": "모두투어",
+      "q_period": "2026.03",
+      "op_q": 28.0,
+      "op_q_est": 10.0,
+      "surprise_pct": 180.0,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.32
+    },
+    {
+      "t": "139480",
+      "n": "이마트",
+      "q_period": "2026.03",
+      "op_q": 1783.0,
+      "op_q_est": 746.0,
+      "surprise_pct": 139.0,
+      "announce_date": "2026-05-14",
+      "price_reaction_pct": -11.51
+    },
+    {
+      "t": "066970",
+      "n": "엘앤에프",
+      "q_period": "2026.03",
+      "op_q": 1173.0,
+      "op_q_est": 505.0,
+      "surprise_pct": 132.3,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -7.45
+    },
+    {
+      "t": "023530",
+      "n": "롯데쇼핑",
+      "q_period": "2026.03",
+      "op_q": 2529.0,
+      "op_q_est": 1099.0,
+      "surprise_pct": 130.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -7.0
+    },
+    {
+      "t": "039130",
+      "n": "하나투어",
+      "q_period": "2026.03",
+      "op_q": 168.0,
+      "op_q_est": 77.0,
+      "surprise_pct": 118.2,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -5.23
+    },
+    {
+      "t": "036460",
+      "n": "한국가스공사",
+      "q_period": "2026.03",
+      "op_q": 9100.0,
+      "op_q_est": 4305.0,
+      "surprise_pct": 111.4,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -0.26
+    },
+    {
+      "t": "015760",
+      "n": "한국전력",
+      "q_period": "2026.03",
+      "op_q": 37842.0,
+      "op_q_est": 19122.0,
+      "surprise_pct": 97.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 0.13
+    },
+    {
+      "t": "336260",
+      "n": "두산퓨얼셀",
+      "q_period": "2026.03",
+      "op_q": -13.0,
+      "op_q_est": -171.0,
+      "surprise_pct": 92.4,
+      "announce_date": "2026-05-14",
+      "price_reaction_pct": -10.79
+    },
+    {
+      "t": "011070",
+      "n": "LG이노텍",
+      "q_period": "2026.03",
+      "op_q": 2953.0,
+      "op_q_est": 1599.0,
+      "surprise_pct": 84.7,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 13.68
+    },
+    {
+      "t": "079550",
+      "n": "LIG넥스원",
+      "q_period": "2026.03",
+      "op_q": 1711.0,
+      "op_q_est": 1055.0,
+      "surprise_pct": 62.2,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 5.35
+    },
+    {
+      "t": "383220",
+      "n": "F&F",
+      "q_period": "2026.03",
+      "op_q": 1535.0,
+      "op_q_est": 969.0,
+      "surprise_pct": 58.4,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -6.7
+    },
+    {
+      "t": "259960",
+      "n": "크래프톤",
+      "q_period": "2026.03",
+      "op_q": 5616.0,
+      "op_q_est": 3576.0,
+      "surprise_pct": 57.0,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -7.67
+    },
+    {
+      "t": "096770",
+      "n": "SK이노베이션",
+      "q_period": "2026.03",
+      "op_q": 21622.0,
+      "op_q_est": 13895.0,
+      "surprise_pct": 55.6,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.37
+    },
+    {
+      "t": "018670",
+      "n": "SK가스",
+      "q_period": "2026.03",
+      "op_q": 2277.0,
+      "op_q_est": 1489.0,
+      "surprise_pct": 52.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -7.47
+    },
+    {
+      "t": "034730",
+      "n": "SK",
+      "q_period": "2026.03",
+      "op_q": 36731.0,
+      "op_q_est": 24283.0,
+      "surprise_pct": 51.3,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 18.67
+    },
+    {
+      "t": "051900",
+      "n": "LG생활건강",
+      "q_period": "2026.03",
+      "op_q": 1078.0,
+      "op_q_est": 718.0,
+      "surprise_pct": 50.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -7.24
+    },
+    {
+      "t": "035250",
+      "n": "강원랜드",
+      "q_period": "2026.03",
+      "op_q": 689.0,
+      "op_q_est": 489.0,
+      "surprise_pct": 40.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -3.45
+    },
+    {
+      "t": "004370",
+      "n": "농심",
+      "q_period": "2026.03",
+      "op_q": 674.0,
+      "op_q_est": 488.0,
+      "surprise_pct": 38.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 2.7
+    },
+    {
+      "t": "010950",
+      "n": "S-Oil",
+      "q_period": "2026.03",
+      "op_q": 12311.0,
+      "op_q_est": 9074.0,
+      "surprise_pct": 35.7,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -5.22
+    }
+  ],
+  "top_reaction": [
+    {
+      "t": "034730",
+      "n": "SK",
+      "q_period": "2026.03",
+      "op_q": 36731.0,
+      "op_q_est": 24283.0,
+      "surprise_pct": 51.3,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 18.67
+    },
+    {
+      "t": "033640",
+      "n": "네패스",
+      "q_period": "2026.03",
+      "op_q": 109.0,
+      "op_q_est": 94.0,
+      "surprise_pct": 16.0,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 18.62
+    },
+    {
+      "t": "011070",
+      "n": "LG이노텍",
+      "q_period": "2026.03",
+      "op_q": 2953.0,
+      "op_q_est": 1599.0,
+      "surprise_pct": 84.7,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 13.68
+    },
+    {
+      "t": "032830",
+      "n": "삼성생명",
+      "q_period": "2026.03",
+      "op_q": 13578.0,
+      "op_q_est": 10545.0,
+      "surprise_pct": 28.8,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 10.45
+    },
+    {
+      "t": "319660",
+      "n": "피에스케이",
+      "q_period": "2026.03",
+      "op_q": 472.0,
+      "op_q_est": 464.0,
+      "surprise_pct": 1.7,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 6.47
+    },
+    {
+      "t": "000810",
+      "n": "삼성화재",
+      "q_period": "2026.03",
+      "op_q": 8611.0,
+      "op_q_est": 8068.0,
+      "surprise_pct": 6.7,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 5.76
+    },
+    {
+      "t": "079550",
+      "n": "LIG넥스원",
+      "q_period": "2026.03",
+      "op_q": 1711.0,
+      "op_q_est": 1055.0,
+      "surprise_pct": 62.2,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 5.35
+    },
+    {
+      "t": "078930",
+      "n": "GS",
+      "q_period": "2026.03",
+      "op_q": 12586.0,
+      "op_q_est": 11636.0,
+      "surprise_pct": 8.2,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 2.95
+    },
+    {
+      "t": "004370",
+      "n": "농심",
+      "q_period": "2026.03",
+      "op_q": 674.0,
+      "op_q_est": 488.0,
+      "surprise_pct": 38.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 2.7
+    },
+    {
+      "t": "005880",
+      "n": "대한해운",
+      "q_period": "2026.03",
+      "op_q": 744.0,
+      "op_q_est": 610.0,
+      "surprise_pct": 22.0,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 1.18
+    },
+    {
+      "t": "015760",
+      "n": "한국전력",
+      "q_period": "2026.03",
+      "op_q": 37842.0,
+      "op_q_est": 19122.0,
+      "surprise_pct": 97.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 0.13
+    },
+    {
+      "t": "017670",
+      "n": "SK텔레콤",
+      "q_period": "2026.03",
+      "op_q": 5376.0,
+      "op_q_est": 5271.0,
+      "surprise_pct": 2.0,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 0.1
+    },
+    {
+      "t": "004170",
+      "n": "신세계",
+      "q_period": "2026.03",
+      "op_q": 1978.0,
+      "op_q_est": 1484.0,
+      "surprise_pct": 33.3,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": 0.0
+    },
+    {
+      "t": "036460",
+      "n": "한국가스공사",
+      "q_period": "2026.03",
+      "op_q": 9100.0,
+      "op_q_est": 4305.0,
+      "surprise_pct": 111.4,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -0.26
+    },
+    {
+      "t": "089590",
+      "n": "제주항공",
+      "q_period": "2026.03",
+      "op_q": 690.0,
+      "op_q_est": -557.0,
+      "surprise_pct": 223.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -0.39
+    },
+    {
+      "t": "073240",
+      "n": "금호타이어",
+      "q_period": "2026.03",
+      "op_q": 1470.0,
+      "op_q_est": 1458.0,
+      "surprise_pct": 0.8,
+      "announce_date": "2026-05-14",
+      "price_reaction_pct": -0.92
+    },
+    {
+      "t": "034220",
+      "n": "LG디스플레이",
+      "q_period": "2026.03",
+      "op_q": 1467.0,
+      "op_q_est": -952.0,
+      "surprise_pct": 254.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -1.24
+    },
+    {
+      "t": "071050",
+      "n": "한국금융지주",
+      "q_period": "2026.03",
+      "op_q": 11063.0,
+      "op_q_est": 9213.0,
+      "surprise_pct": 20.1,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -1.36
+    },
+    {
+      "t": "003490",
+      "n": "대한항공",
+      "q_period": "2026.03",
+      "op_q": 5174.0,
+      "op_q_est": -2290.0,
+      "surprise_pct": 325.9,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -1.83
+    },
+    {
+      "t": "272450",
+      "n": "진에어",
+      "q_period": "2026.03",
+      "op_q": 576.0,
+      "op_q_est": -707.0,
+      "surprise_pct": 181.5,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.2
+    },
+    {
+      "t": "080160",
+      "n": "모두투어",
+      "q_period": "2026.03",
+      "op_q": 28.0,
+      "op_q_est": 10.0,
+      "surprise_pct": 180.0,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.32
+    },
+    {
+      "t": "096770",
+      "n": "SK이노베이션",
+      "q_period": "2026.03",
+      "op_q": 21622.0,
+      "op_q_est": 13895.0,
+      "surprise_pct": 55.6,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.37
+    },
+    {
+      "t": "035600",
+      "n": "KG이니시스",
+      "q_period": "2026.03",
+      "op_q": 255.0,
+      "op_q_est": 235.0,
+      "surprise_pct": 8.5,
+      "announce_date": "2026-05-14",
+      "price_reaction_pct": -2.41
+    },
+    {
+      "t": "002350",
+      "n": "넥센타이어",
+      "q_period": "2026.03",
+      "op_q": 542.0,
+      "op_q_est": 482.0,
+      "surprise_pct": 12.4,
+      "announce_date": "2026-05-15",
+      "price_reaction_pct": -2.73
+    },
+    {
+      "t": "071320",
+      "n": "지역난방공사",
+      "q_period": "2026.03",
+      "op_q": 3202.0,
+      "op_q_est": -246.0,
+      "surprise_pct": 1401.6,
+      "announce_date": "2026-05-13",
+      "price_reaction_pct": -3.23
+    }
+  ]
+}

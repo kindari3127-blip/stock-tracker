@@ -1,0 +1,9 @@
+<!doctype html><html lang='ko'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>이동 중…</title></head><body>
+<script>
+var u=new URLSearchParams(location.search).get('u');
+if(u&&/^https?:\/\//.test(u)){location.replace(u);}
+else{location.href='latest.html';}
+</script>
+<p>기사로 이동 중…</p></body></html>

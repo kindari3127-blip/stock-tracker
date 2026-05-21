@@ -1,0 +1,797 @@
+{
+  "updated": "2026-07-06 06:05",
+  "pool_size": 1873,
+  "sectors": [
+    {
+      "name": "레저용장비와제품",
+      "n_stocks": 4,
+      "n_with_1y": 1,
+      "ret_1w": 32.17,
+      "ret_1m": 25.24,
+      "ret_3m": 50.72,
+      "ret_1y": -1.41,
+      "momentum_score": 30.44
+    },
+    {
+      "name": "은행",
+      "n_stocks": 11,
+      "n_with_1y": 0,
+      "ret_1w": 13.64,
+      "ret_1m": 0.17,
+      "ret_3m": 58.65,
+      "ret_1y": null,
+      "momentum_score": 19.15
+    },
+    {
+      "name": "전기장비",
+      "n_stocks": 27,
+      "n_with_1y": 1,
+      "ret_1w": 10.82,
+      "ret_1m": -0.92,
+      "ret_3m": 79.97,
+      "ret_1y": -12.4,
+      "momentum_score": 18.81
+    },
+    {
+      "name": "항공사",
+      "n_stocks": 7,
+      "n_with_1y": 0,
+      "ret_1w": 8.09,
+      "ret_1m": 14.91,
+      "ret_3m": 33.13,
+      "ret_1y": null,
+      "momentum_score": 15.93
+    },
+    {
+      "name": "증권",
+      "n_stocks": 33,
+      "n_with_1y": 2,
+      "ret_1w": 12.05,
+      "ret_1m": -6.89,
+      "ret_3m": 58.44,
+      "ret_1y": 7.59,
+      "momentum_score": 15.2
+    },
+    {
+      "name": "항공화물운송과물류",
+      "n_stocks": 9,
+      "n_with_1y": 0,
+      "ret_1w": 8.87,
+      "ret_1m": -5.85,
+      "ret_3m": 53.66,
+      "ret_1y": null,
+      "momentum_score": 13.92
+    },
+    {
+      "name": "손해보험",
+      "n_stocks": 11,
+      "n_with_1y": 0,
+      "ret_1w": 3.94,
+      "ret_1m": -3.59,
+      "ret_3m": 53.95,
+      "ret_1y": null,
+      "momentum_score": 12.54
+    },
+    {
+      "name": "우주항공과국방",
+      "n_stocks": 27,
+      "n_with_1y": 3,
+      "ret_1w": 13.34,
+      "ret_1m": 5.52,
+      "ret_3m": 47.98,
+      "ret_1y": -42.59,
+      "momentum_score": 12.33
+    },
+    {
+      "name": "복합기업",
+      "n_stocks": 18,
+      "n_with_1y": 0,
+      "ret_1w": -6.92,
+      "ret_1m": 12.06,
+      "ret_3m": 50.15,
+      "ret_1y": null,
+      "momentum_score": 12.09
+    },
+    {
+      "name": "담배",
+      "n_stocks": 1,
+      "n_with_1y": 0,
+      "ret_1w": 4.6,
+      "ret_1m": -2.34,
+      "ret_3m": 44.31,
+      "ret_1y": null,
+      "momentum_score": 11.11
+    },
+    {
+      "name": "전기유틸리티",
+      "n_stocks": 5,
+      "n_with_1y": 0,
+      "ret_1w": 3.54,
+      "ret_1m": -2.49,
+      "ret_3m": 40.33,
+      "ret_1y": null,
+      "momentum_score": 9.71
+    },
+    {
+      "name": "다각화된소비자서비스",
+      "n_stocks": 1,
+      "n_with_1y": 0,
+      "ret_1w": 7.52,
+      "ret_1m": 11.89,
+      "ret_3m": 10.68,
+      "ret_1y": null,
+      "momentum_score": 9.68
+    },
+    {
+      "name": "카드",
+      "n_stocks": 1,
+      "n_with_1y": 0,
+      "ret_1w": 8.25,
+      "ret_1m": 8.37,
+      "ret_3m": 10.04,
+      "ret_1y": null,
+      "momentum_score": 8.69
+    },
+    {
+      "name": "건설",
+      "n_stocks": 54,
+      "n_with_1y": 6,
+      "ret_1w": 11.16,
+      "ret_1m": -6.42,
+      "ret_3m": 41.48,
+      "ret_1y": -21.86,
+      "momentum_score": 8.65
+    },
+    {
+      "name": "반도체와반도체장비",
+      "n_stocks": 143,
+      "n_with_1y": 12,
+      "ret_1w": -8.7,
+      "ret_1m": 4.55,
+      "ret_3m": 39.49,
+      "ret_1y": 11.27,
+      "momentum_score": 6.91
+    },
+    {
+      "name": "자동차",
+      "n_stocks": 11,
+      "n_with_1y": 0,
+      "ret_1w": 5.72,
+      "ret_1m": -20.34,
+      "ret_3m": 47.39,
+      "ret_1y": null,
+      "momentum_score": 6.29
+    },
+    {
+      "name": "조선",
+      "n_stocks": 23,
+      "n_with_1y": 2,
+      "ret_1w": 4.61,
+      "ret_1m": -10.89,
+      "ret_3m": 43.22,
+      "ret_1y": -12.83,
+      "momentum_score": 5.94
+    },
+    {
+      "name": "무선통신서비스",
+      "n_stocks": 3,
+      "n_with_1y": 0,
+      "ret_1w": -3.51,
+      "ret_1m": -15.98,
+      "ret_3m": 55.69,
+      "ret_1y": null,
+      "momentum_score": 5.49
+    },
+    {
+      "name": "건축자재",
+      "n_stocks": 32,
+      "n_with_1y": 7,
+      "ret_1w": 3.27,
+      "ret_1m": -5.59,
+      "ret_3m": 26.81,
+      "ret_1y": -1.04,
+      "momentum_score": 4.89
+    },
+    {
+      "name": "자동차부품",
+      "n_stocks": 94,
+      "n_with_1y": 22,
+      "ret_1w": 4.22,
+      "ret_1m": -18.91,
+      "ret_3m": 50.94,
+      "ret_1y": -17.93,
+      "momentum_score": 4.41
+    },
+    {
+      "name": "생명보험",
+      "n_stocks": 4,
+      "n_with_1y": 0,
+      "ret_1w": -10.28,
+      "ret_1m": -6.5,
+      "ret_3m": 48.73,
+      "ret_1y": null,
+      "momentum_score": 4.09
+    },
+    {
+      "name": "광고",
+      "n_stocks": 7,
+      "n_with_1y": 0,
+      "ret_1w": 5.11,
+      "ret_1m": 4.46,
+      "ret_3m": 1.31,
+      "ret_1y": null,
+      "momentum_score": 4.05
+    },
+    {
+      "name": "인터넷과카탈로그소매",
+      "n_stocks": 6,
+      "n_with_1y": 1,
+      "ret_1w": 12.58,
+      "ret_1m": 8.1,
+      "ret_3m": -1.85,
+      "ret_1y": -33.52,
+      "momentum_score": 3.74
+    },
+    {
+      "name": "섬유,의류,신발,호화품",
+      "n_stocks": 45,
+      "n_with_1y": 10,
+      "ret_1w": 11.76,
+      "ret_1m": 2.38,
+      "ret_3m": 3.54,
+      "ret_1y": -25.74,
+      "momentum_score": 3.55
+    },
+    {
+      "name": "석유와가스",
+      "n_stocks": 14,
+      "n_with_1y": 4,
+      "ret_1w": -3.71,
+      "ret_1m": 2.29,
+      "ret_3m": 35.32,
+      "ret_1y": -28.79,
+      "momentum_score": 3.39
+    },
+    {
+      "name": "소프트웨어",
+      "n_stocks": 27,
+      "n_with_1y": 9,
+      "ret_1w": 3.05,
+      "ret_1m": -6.54,
+      "ret_3m": 42.47,
+      "ret_1y": -43.66,
+      "momentum_score": 3.39
+    },
+    {
+      "name": "화장품",
+      "n_stocks": 44,
+      "n_with_1y": 10,
+      "ret_1w": 12.31,
+      "ret_1m": 5.56,
+      "ret_3m": -5.48,
+      "ret_1y": -24.8,
+      "momentum_score": 3.02
+    },
+    {
+      "name": "기타금융",
+      "n_stocks": 4,
+      "n_with_1y": 0,
+      "ret_1w": 6.97,
+      "ret_1m": 1.22,
+      "ret_3m": -5.38,
+      "ret_1y": null,
+      "momentum_score": 2.31
+    },
+    {
+      "name": "기계",
+      "n_stocks": 81,
+      "n_with_1y": 20,
+      "ret_1w": 5.16,
+      "ret_1m": -14.5,
+      "ret_3m": 28.72,
+      "ret_1y": -15.03,
+      "momentum_score": 1.96
+    },
+    {
+      "name": "해운사",
+      "n_stocks": 10,
+      "n_with_1y": 4,
+      "ret_1w": 4.95,
+      "ret_1m": -2.19,
+      "ret_3m": 2.95,
+      "ret_1y": -0.95,
+      "momentum_score": 1.82
+    },
+    {
+      "name": "비철금속",
+      "n_stocks": 28,
+      "n_with_1y": 5,
+      "ret_1w": 5.62,
+      "ret_1m": -12.21,
+      "ret_3m": 22.45,
+      "ret_1y": -13.89,
+      "momentum_score": 1.69
+    },
+    {
+      "name": "가구",
+      "n_stocks": 5,
+      "n_with_1y": 0,
+      "ret_1w": 7.63,
+      "ret_1m": 3.71,
+      "ret_3m": -13.99,
+      "ret_1y": null,
+      "momentum_score": 1.52
+    },
+    {
+      "name": "전자장비와기기",
+      "n_stocks": 71,
+      "n_with_1y": 21,
+      "ret_1w": -0.79,
+      "ret_1m": 4.68,
+      "ret_3m": 12.86,
+      "ret_1y": -23.52,
+      "momentum_score": 1.31
+    },
+    {
+      "name": "다각화된통신서비스",
+      "n_stocks": 2,
+      "n_with_1y": 1,
+      "ret_1w": 2.9,
+      "ret_1m": -0.76,
+      "ret_3m": -2.61,
+      "ret_1y": 6.15,
+      "momentum_score": 1.02
+    },
+    {
+      "name": "복합유틸리티",
+      "n_stocks": 1,
+      "n_with_1y": 0,
+      "ret_1w": 4.32,
+      "ret_1m": -1.02,
+      "ret_3m": -2.73,
+      "ret_1y": null,
+      "momentum_score": 0.97
+    },
+    {
+      "name": "백화점과일반상점",
+      "n_stocks": 11,
+      "n_with_1y": 0,
+      "ret_1w": -0.49,
+      "ret_1m": 3.72,
+      "ret_3m": -0.32,
+      "ret_1y": null,
+      "momentum_score": 0.95
+    },
+    {
+      "name": "게임엔터테인먼트",
+      "n_stocks": 25,
+      "n_with_1y": 2,
+      "ret_1w": 12.66,
+      "ret_1m": -5.97,
+      "ret_3m": -10.38,
+      "ret_1y": -8.43,
+      "momentum_score": 0.35
+    },
+    {
+      "name": "도로와철도운송",
+      "n_stocks": 7,
+      "n_with_1y": 0,
+      "ret_1w": 6.04,
+      "ret_1m": -4.03,
+      "ret_3m": -4.69,
+      "ret_1y": null,
+      "momentum_score": 0.3
+    },
+    {
+      "name": "식품과기본식료품소매",
+      "n_stocks": 4,
+      "n_with_1y": 2,
+      "ret_1w": 12.35,
+      "ret_1m": -2.37,
+      "ret_3m": -8.05,
+      "ret_1y": -23.64,
+      "momentum_score": 0.25
+    },
+    {
+      "name": "포장재",
+      "n_stocks": 15,
+      "n_with_1y": 6,
+      "ret_1w": 12.31,
+      "ret_1m": 2.93,
+      "ret_3m": -18.12,
+      "ret_1y": -21.11,
+      "momentum_score": 0.07
+    },
+    {
+      "name": "제약",
+      "n_stocks": 131,
+      "n_with_1y": 21,
+      "ret_1w": 7.46,
+      "ret_1m": 0.95,
+      "ret_3m": -2.67,
+      "ret_1y": -29.73,
+      "momentum_score": -0.24
+    },
+    {
+      "name": "식품",
+      "n_stocks": 60,
+      "n_with_1y": 8,
+      "ret_1w": 6.57,
+      "ret_1m": -0.69,
+      "ret_3m": -4.62,
+      "ret_1y": -23.56,
+      "momentum_score": -0.86
+    },
+    {
+      "name": "가정용기기와용품",
+      "n_stocks": 13,
+      "n_with_1y": 3,
+      "ret_1w": 9.91,
+      "ret_1m": -1.8,
+      "ret_3m": -5.46,
+      "ret_1y": -32.44,
+      "momentum_score": -0.91
+    },
+    {
+      "name": "화학",
+      "n_stocks": 89,
+      "n_with_1y": 14,
+      "ret_1w": 2.16,
+      "ret_1m": -16.09,
+      "ret_3m": 23.7,
+      "ret_1y": -24.72,
+      "momentum_score": -1.69
+    },
+    {
+      "name": "철강",
+      "n_stocks": 37,
+      "n_with_1y": 8,
+      "ret_1w": 4.71,
+      "ret_1m": -16.79,
+      "ret_3m": 9.2,
+      "ret_1y": -7.98,
+      "momentum_score": -2.11
+    },
+    {
+      "name": "상업서비스와공급품",
+      "n_stocks": 22,
+      "n_with_1y": 1,
+      "ret_1w": 4.73,
+      "ret_1m": -2.19,
+      "ret_3m": -0.07,
+      "ret_1y": -38.04,
+      "momentum_score": -2.58
+    },
+    {
+      "name": "무역회사와판매업체",
+      "n_stocks": 6,
+      "n_with_1y": 0,
+      "ret_1w": 8.43,
+      "ret_1m": -13.04,
+      "ret_3m": -9.15,
+      "ret_1y": null,
+      "momentum_score": -2.63
+    },
+    {
+      "name": "건강관리기술",
+      "n_stocks": 12,
+      "n_with_1y": 2,
+      "ret_1w": 11.11,
+      "ret_1m": 1.43,
+      "ret_3m": -22.17,
+      "ret_1y": -31.7,
+      "momentum_score": -2.73
+    },
+    {
+      "name": "전기제품",
+      "n_stocks": 56,
+      "n_with_1y": 12,
+      "ret_1w": 5.41,
+      "ret_1m": -16.93,
+      "ret_3m": 4.33,
+      "ret_1y": -8.59,
+      "momentum_score": -2.91
+    },
+    {
+      "name": "디스플레이패널",
+      "n_stocks": 4,
+      "n_with_1y": 1,
+      "ret_1w": -2.17,
+      "ret_1m": -24.72,
+      "ret_3m": 33.69,
+      "ret_1y": -13.6,
+      "momentum_score": -2.91
+    },
+    {
+      "name": "종이와목재",
+      "n_stocks": 9,
+      "n_with_1y": 3,
+      "ret_1w": 4.64,
+      "ret_1m": 2.22,
+      "ret_3m": -7.38,
+      "ret_1y": -39.84,
+      "momentum_score": -2.94
+    },
+    {
+      "name": "사무용전자제품",
+      "n_stocks": 1,
+      "n_with_1y": 0,
+      "ret_1w": 3.2,
+      "ret_1m": -1.1,
+      "ret_3m": -18.15,
+      "ret_1y": null,
+      "momentum_score": -2.98
+    },
+    {
+      "name": "핸드셋",
+      "n_stocks": 38,
+      "n_with_1y": 12,
+      "ret_1w": 6.23,
+      "ret_1m": -11.06,
+      "ret_3m": -9.14,
+      "ret_1y": -4.17,
+      "momentum_score": -3.07
+    },
+    {
+      "name": "건축제품",
+      "n_stocks": 4,
+      "n_with_1y": 2,
+      "ret_1w": 11.27,
+      "ret_1m": -12.81,
+      "ret_3m": -15.68,
+      "ret_1y": -6.9,
+      "momentum_score": -3.16
+    },
+    {
+      "name": "부동산",
+      "n_stocks": 23,
+      "n_with_1y": 3,
+      "ret_1w": 0.5,
+      "ret_1m": 3.99,
+      "ret_3m": -15.29,
+      "ret_1y": -16.41,
+      "momentum_score": -3.3
+    },
+    {
+      "name": "운송인프라",
+      "n_stocks": 6,
+      "n_with_1y": 1,
+      "ret_1w": -1.77,
+      "ret_1m": -3.04,
+      "ret_3m": -2.64,
+      "ret_1y": -12.11,
+      "momentum_score": -3.36
+    },
+    {
+      "name": "음료",
+      "n_stocks": 8,
+      "n_with_1y": 2,
+      "ret_1w": 4.84,
+      "ret_1m": -4.78,
+      "ret_3m": -11.27,
+      "ret_1y": -16.41,
+      "momentum_score": -3.39
+    },
+    {
+      "name": "디스플레이장비및부품",
+      "n_stocks": 38,
+      "n_with_1y": 8,
+      "ret_1w": 3.73,
+      "ret_1m": -14.34,
+      "ret_3m": -7.22,
+      "ret_1y": 1.09,
+      "momentum_score": -4.14
+    },
+    {
+      "name": "가정용품",
+      "n_stocks": 3,
+      "n_with_1y": 3,
+      "ret_1w": 5.61,
+      "ret_1m": -3.3,
+      "ret_3m": -17.85,
+      "ret_1y": -19.61,
+      "momentum_score": -4.28
+    },
+    {
+      "name": "컴퓨터와주변기기",
+      "n_stocks": 8,
+      "n_with_1y": 5,
+      "ret_1w": 3.27,
+      "ret_1m": -5.77,
+      "ret_3m": -9.84,
+      "ret_1y": -23.6,
+      "momentum_score": -4.75
+    },
+    {
+      "name": "건강관리장비와용품",
+      "n_stocks": 63,
+      "n_with_1y": 12,
+      "ret_1w": 3.81,
+      "ret_1m": -2.03,
+      "ret_3m": -18.21,
+      "ret_1y": -23.47,
+      "momentum_score": -5.07
+    },
+    {
+      "name": "IT서비스",
+      "n_stocks": 64,
+      "n_with_1y": 13,
+      "ret_1w": 3.04,
+      "ret_1m": -26.06,
+      "ret_3m": 22.27,
+      "ret_1y": -30.95,
+      "momentum_score": -5.24
+    },
+    {
+      "name": "생명과학도구및서비스",
+      "n_stocks": 22,
+      "n_with_1y": 9,
+      "ret_1w": 7.41,
+      "ret_1m": -7.53,
+      "ret_3m": -8.15,
+      "ret_1y": -45.04,
+      "momentum_score": -5.43
+    },
+    {
+      "name": "교육서비스",
+      "n_stocks": 13,
+      "n_with_1y": 2,
+      "ret_1w": 5.09,
+      "ret_1m": -2.36,
+      "ret_3m": -11.27,
+      "ret_1y": -45.91,
+      "momentum_score": -5.52
+    },
+    {
+      "name": "가스유틸리티",
+      "n_stocks": 12,
+      "n_with_1y": 1,
+      "ret_1w": 5.47,
+      "ret_1m": -3.04,
+      "ret_3m": -15.3,
+      "ret_1y": -38.13,
+      "momentum_score": -5.6
+    },
+    {
+      "name": "방송과엔터테인먼트",
+      "n_stocks": 27,
+      "n_with_1y": 4,
+      "ret_1w": 12.52,
+      "ret_1m": -3.08,
+      "ret_3m": -24.72,
+      "ret_1y": -51.93,
+      "momentum_score": -6.05
+    },
+    {
+      "name": "에너지장비및서비스",
+      "n_stocks": 22,
+      "n_with_1y": 3,
+      "ret_1w": 7.56,
+      "ret_1m": -6.44,
+      "ret_3m": -19.12,
+      "ret_1y": -33.33,
+      "momentum_score": -6.07
+    },
+    {
+      "name": "생물공학",
+      "n_stocks": 40,
+      "n_with_1y": 9,
+      "ret_1w": 1.72,
+      "ret_1m": -6.67,
+      "ret_3m": -4.71,
+      "ret_1y": -38.33,
+      "momentum_score": -6.09
+    },
+    {
+      "name": "호텔,레스토랑,레저",
+      "n_stocks": 19,
+      "n_with_1y": 3,
+      "ret_1w": 5.54,
+      "ret_1m": -8.89,
+      "ret_3m": -12.91,
+      "ret_1y": -38.7,
+      "momentum_score": -6.9
+    },
+    {
+      "name": "양방향미디어와서비스",
+      "n_stocks": 10,
+      "n_with_1y": 3,
+      "ret_1w": 2.42,
+      "ret_1m": -18.87,
+      "ret_3m": -5.21,
+      "ret_1y": -25.43,
+      "momentum_score": -8.28
+    },
+    {
+      "name": "건강관리업체및서비스",
+      "n_stocks": 18,
+      "n_with_1y": 5,
+      "ret_1w": 7.35,
+      "ret_1m": -12.19,
+      "ret_3m": -21.8,
+      "ret_1y": -33.81,
+      "momentum_score": -8.46
+    },
+    {
+      "name": "출판",
+      "n_stocks": 5,
+      "n_with_1y": 2,
+      "ret_1w": 5.73,
+      "ret_1m": -7.8,
+      "ret_3m": -24.6,
+      "ret_1y": -47.62,
+      "momentum_score": -9.73
+    },
+    {
+      "name": "전자제품",
+      "n_stocks": 8,
+      "n_with_1y": 4,
+      "ret_1w": -2.39,
+      "ret_1m": -36.29,
+      "ret_3m": 23.88,
+      "ret_1y": -33.19,
+      "momentum_score": -10.39
+    },
+    {
+      "name": "전문소매",
+      "n_stocks": 4,
+      "n_with_1y": 2,
+      "ret_1w": 1.15,
+      "ret_1m": -10.18,
+      "ret_3m": -23.29,
+      "ret_1y": -46.57,
+      "momentum_score": -11.91
+    },
+    {
+      "name": "통신장비",
+      "n_stocks": 34,
+      "n_with_1y": 8,
+      "ret_1w": -1.4,
+      "ret_1m": -29.39,
+      "ret_3m": -18.81,
+      "ret_1y": 6.47,
+      "momentum_score": -12.49
+    },
+    {
+      "name": "판매업체",
+      "n_stocks": 5,
+      "n_with_1y": 1,
+      "ret_1w": -0.03,
+      "ret_1m": -12.55,
+      "ret_3m": -32.74,
+      "ret_1y": -39.85,
+      "momentum_score": -14.31
+    },
+    {
+      "name": "창업투자",
+      "n_stocks": 13,
+      "n_with_1y": 2,
+      "ret_1w": 4.78,
+      "ret_1m": -33.14,
+      "ret_3m": -29.85,
+      "ret_1y": -44.86,
+      "momentum_score": -18.49
+    }
+  ],
+  "top_5_now": [
+    "레저용장비와제품",
+    "은행",
+    "우주항공과국방",
+    "게임엔터테인먼트",
+    "인터넷과카탈로그소매"
+  ],
+  "top_5_quarter": [
+    "전기장비",
+    "은행",
+    "증권",
+    "무선통신서비스",
+    "손해보험"
+  ],
+  "top_5_year": [
+    "반도체와반도체장비",
+    "증권",
+    "통신장비",
+    "다각화된통신서비스",
+    "디스플레이장비및부품"
+  ]
+}
