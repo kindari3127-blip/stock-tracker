@@ -10,17 +10,23 @@ python collect_extra.py >> data\log.txt 2>&1
 python fundamentals.py >> data\log.txt 2>&1
 python fundamentals_extra.py >> data\log.txt 2>&1
 python cashflow.py >> data\log.txt 2>&1
-rem business_scrape.py: 사업개요 변동 적어 일요일에만 전체 갱신 (캐시 자동 재사용)
-powershell -NoProfile -Command "if ((Get-Date).DayOfWeek -eq 'Sunday') { python business_scrape.py }" >> data\log.txt 2>&1
+python macro.py >> data\log.txt 2>&1
+rem business_scrape.py: 사업개요 변동 적어 월요일에만 전체 갱신 (주말 제외로 일요일→월요일 변경)
+powershell -NoProfile -Command "if ((Get-Date).DayOfWeek -eq 'Monday') { python business_scrape.py }" >> data\log.txt 2>&1
 python build_data.py >> data\log.txt 2>&1
+python flows.py >> data\log.txt 2>&1
 python listing_dates.py >> data\log.txt 2>&1
 python calendar_events.py >> data\log.txt 2>&1
 python earnings_season.py >> data\log.txt 2>&1
 python event_stocks.py >> data\log.txt 2>&1
 python categories.py >> data\log.txt 2>&1
 python recommend.py >> data\log.txt 2>&1
+python prospects.py >> data\log.txt 2>&1
 python buy_timing.py >> data\log.txt 2>&1
 python valuation.py >> data\log.txt 2>&1
+python earnings_surprise.py >> data\log.txt 2>&1
+rem sector_rotation: 시계열 ~4분 소요, 월요일에만 전체 갱신
+powershell -NoProfile -Command "if ((Get-Date).DayOfWeek -eq 'Monday') { python sector_rotation.py }" >> data\log.txt 2>&1
 rem chart_5y.py: 5년 시계열은 변화 적어 주1회(월요일)만 갱신
 powershell -NoProfile -Command "if ((Get-Date).DayOfWeek -eq 'Monday') { python chart_5y.py }" >> data\log.txt 2>&1
 python news_analysis.py >> data\log.txt 2>&1

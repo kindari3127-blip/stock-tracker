@@ -32,6 +32,13 @@ VALUATION = HERE / "data" / "valuation.json"
 DAILY_REPORTS = HERE / "data" / "daily_reports.json"
 FUND = HERE / "data" / "fundamentals.csv"
 CASHFLOW = HERE / "data" / "cashflow.csv"
+# Phase 1~3 신설 데이터
+MACRO = HERE / "data" / "macro.json"
+FLOWS_MARKET = HERE / "data" / "flows_market.json"
+FLOWS_STOCK = HERE / "data" / "flows_stock.json"
+PROSPECTS = HERE / "data" / "prospects.json"
+SECTOR_ROTATION = HERE / "data" / "sector_rotation.json"
+EARNINGS_SURPRISE = HERE / "data" / "earnings_surprise.json"
 OUT = HERE / "report.html"
 
 
@@ -174,9 +181,16 @@ html,body {{ margin:0; padding:0; background:var(--bg); color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
   font-size:15px; line-height:1.5; -webkit-text-size-adjust:100%; }}
 header {{ position:sticky; top:0; z-index:10; background:var(--bg); padding:10px 12px 8px; border-bottom:1px solid var(--line); }}
-.title {{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px; }}
+.title {{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px; gap:8px; }}
 .title h1 {{ font-size:18px; margin:0; font-weight:700; }}
 .title .date {{ font-size:12px; color:var(--muted); }}
+.title .meta-wrap {{ display:flex; align-items:center; gap:6px; }}
+.title .build-tag {{ font-size:10px; color:var(--muted); opacity:0.7; }}
+.title .refresh-btn {{ font-size:16px; background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:6px; padding:2px 7px; cursor:pointer; transition:all 0.15s; }}
+.title .refresh-btn:hover, .title .refresh-btn:active {{ color:var(--accent); border-color:var(--accent); }}
+.update-toast {{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--accent); color:#0f172a; padding:10px 18px; border-radius:24px; font-size:13px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.3); z-index:9999; display:none; }}
+.update-toast.show {{ display:block; animation:slideUp 0.3s ease; }}
+@keyframes slideUp {{ from {{ transform:translate(-50%, 20px); opacity:0; }} to {{ transform:translate(-50%, 0); opacity:1; }} }}
 .search-wrap {{ position:relative; }}
 #searchInput {{ width:100%; padding:10px 36px 10px 12px; background:var(--panel); border:1px solid var(--line);
   border-radius:8px; color:var(--text); font-size:15px; outline:none; }}
@@ -309,6 +323,10 @@ main {{ padding:12px; padding-bottom:40px; }}
 .nav-menu::-webkit-scrollbar {{ display:none; }}
 .nav-menu a {{ flex-shrink:0; padding:5px 11px; font-size:12px; color:var(--muted); text-decoration:none; border-radius:14px; background:var(--panel); border:1px solid var(--line); white-space:nowrap; transition:all 0.15s; }}
 .nav-menu a:hover, .nav-menu a:active {{ color:#0f172a; background:var(--accent); border-color:var(--accent); font-weight:600; }}
+.tab-bar {{ display:flex; padding:8px 12px 0; background:var(--panel2); border-top:1px solid var(--line); gap:0; }}
+.tab-bar button {{ flex:1; padding:9px 6px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; }}
+.tab-bar button.active {{ color:var(--accent); border-bottom-color:var(--accent); }}
+.tab-bar button:hover {{ color:var(--text); }}
 @media (min-width:600px) {{
   body {{ font-size:14px; }}
   main {{ max-width:760px; margin:0 auto; }}
@@ -320,23 +338,38 @@ main {{ padding:12px; padding-bottom:40px; }}
 <header>
   <div class="title">
     <h1>주식추적기</h1>
-    <span class="date">{ref_label}</span>
+    <div class="meta-wrap">
+      <span class="date">{ref_label}</span>
+      <span class="build-tag" id="buildTag" title="빌드 시각">v{build_ts}</span>
+      <button class="refresh-btn" id="forceRefreshBtn" type="button" title="강제 새로고침 (캐시 비우기)" aria-label="강제 새로고침">⟳</button>
+    </div>
   </div>
+  <div class="update-toast" id="updateToast">새 버전이 적용되었습니다</div>
   <div class="search-wrap">
     <input id="searchInput" type="search" placeholder="종목명 / 티커 / 업종 검색" autocomplete="off" inputmode="search">
     <button id="clearBtn" type="button" aria-label="지우기">×</button>
   </div>
-  <nav class="nav-menu">
-    <a href="#sec-overview">시장 총평</a>
-    <a href="#sec-reports">기업 리포트</a>
-    <a href="#sec-calendar">일정</a>
-    <a href="#sec-sectors">강세 섹터</a>
-    <a href="#sec-stocks">강세 종목</a>
-    <a href="#sec-reco">추천</a>
-    <a href="#sec-pfr">PFR</a>
-    <a href="#sec-buy">매수 타이밍</a>
-    <a href="#sec-history">내가 본 종목</a>
-    <a href="#sec-cat">카테고리</a>
+  <nav class="tab-bar" id="tabBar">
+    <button class="active" data-tab="market">시황</button>
+    <button data-tab="discover">발굴</button>
+    <button data-tab="track">추적</button>
+  </nav>
+  <nav class="nav-menu" id="navMenu">
+    <a href="#sec-overview" data-belongs="market">시장 총평</a>
+    <a href="#sec-macro" data-belongs="market">매크로</a>
+    <a href="#sec-flows" data-belongs="market">수급</a>
+    <a href="#sec-sectors" data-belongs="market">강세 섹터</a>
+    <a href="#sec-stocks" data-belongs="market">강세 종목</a>
+    <a href="#sec-rotation" data-belongs="market">섹터 로테이션</a>
+    <a href="#sec-earnings" data-belongs="market">어닝 서프라이즈</a>
+    <a href="#sec-prospects" data-belongs="discover">유망주</a>
+    <a href="#sec-reco" data-belongs="discover">추천</a>
+    <a href="#sec-pfr" data-belongs="discover">PFR</a>
+    <a href="#sec-buy" data-belongs="discover">매수 타이밍</a>
+    <a href="#sec-cat" data-belongs="discover">카테고리</a>
+    <a href="#sec-reports" data-belongs="track">기업 리포트</a>
+    <a href="#sec-calendar" data-belongs="track">일정</a>
+    <a href="#sec-history" data-belongs="track">내가 본 종목</a>
   </nav>
 </header>
 
@@ -391,6 +424,50 @@ main {{ padding:12px; padding-bottom:40px; }}
       </div>
       <ul class="list" id="stockList"></ul>
     </div>
+
+    <!-- ===== Phase 1~3 신설 섹션 ===== -->
+    <div class="section" id="macroSection" style="display:none;">
+      <a id="sec-macro"></a>
+      <h2>매크로 지표 <span class="badge">환율·금리·원자재·위험·글로벌</span></h2>
+      <div class="criteria">D1 = 전일대비 / D5·D20 = 5·20거래일 누적 변화율. KOSPI 흐름과 함께 본다.</div>
+      <div id="macroGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;padding:10px;"></div>
+    </div>
+
+    <div class="section" id="flowsSection" style="display:none;">
+      <a id="sec-flows"></a>
+      <h2>시장 수급 <span class="badge">개인·외인·기관 5일</span></h2>
+      <div class="criteria">단위 백만원. 양수 = 순매수. 5일 누적 합계는 카드 우측.</div>
+      <div id="flowsTable" style="padding:10px;font-size:12px;"></div>
+    </div>
+
+    <div class="section" id="prospectsSection" style="display:none;">
+      <a id="sec-prospects"></a>
+      <h2>유망주 발굴 <span class="badge">멀티팩터 발굴 풀</span></h2>
+      <div class="criteria">펀더 30% · 기술 20% · 모멘텀 20% · 수급 20% · 섹터 10% (z-score 가중합)</div>
+      <div class="tabs">
+        <button class="tab active" data-prospect="top_30">종합 TOP 30</button>
+        <button class="tab" data-prospect="new_high">신고가 근접</button>
+        <button class="tab" data-prospect="foreign_buy_top">외인 매수</button>
+        <button class="tab" data-prospect="momentum_with_fund">모멘텀+펀더</button>
+        <button class="tab" data-prospect="volume_spike">거래량 spike</button>
+      </div>
+      <ul class="list" id="prospectsList"></ul>
+    </div>
+
+    <div class="section" id="rotationSection" style="display:none;">
+      <a id="sec-rotation"></a>
+      <h2>섹터 로테이션 <span class="badge">1주·1개월·3개월·1년</span></h2>
+      <div class="criteria">시총가중 평균 등락률. 단기 강세 · 분기 강세 · 연간 강세 흐름 파악.</div>
+      <div id="rotationTable" style="padding:10px;font-size:12px;overflow-x:auto;"></div>
+    </div>
+
+    <div class="section" id="earningsSection" style="display:none;">
+      <a id="sec-earnings"></a>
+      <h2>분기 어닝 서프라이즈 <span class="badge">실적 vs 컨센서스</span></h2>
+      <div class="criteria">분기 영업이익 실적과 추정치 갭. 양수 = 어닝 서프라이즈, 음수 = 쇼크.</div>
+      <ul class="list" id="earningsList"></ul>
+    </div>
+    <!-- ===== /Phase 1~3 신설 ===== -->
 
     <div class="section" id="recoSection" style="display:none;">
       <a id="sec-reco"></a>
@@ -464,6 +541,7 @@ let CHARTS_LAZY_LOADED = false;
 const PER_HIST = {per_hist_json};
 const CAL = {calendar_json};
 const BUY_TIMING = {buy_timing_json};
+const NEW = {new_bundle_json};
 const HISTORY_KEY = 'st_history_v1';
 const QUEUE_KEY = 'st_report_queue_v1';
 const BUILD_TS = '{build_ts}';
@@ -959,6 +1037,8 @@ function buildValuationCard(ticker) {{
       <div class="val-row"><span class="lbl">ROE</span><span>${{fmt(m.roe)}}% / 업종 ${{fmt(med.roe)}}%</span></div>
       <div class="val-row"><span class="lbl">PEG</span><span>${{fmt(m.peg)}}</span></div>
       <div class="val-row"><span class="lbl">EPS 성장</span><span>${{fmt(m.eps_growth)}}%</span></div>
+      ${{m.fcf_yield != null ? `<div class="val-row"><span class="lbl">FCF Yield</span><span>${{m.fcf_yield}}%</span></div>` : ''}}
+      ${{m.ev_ebitda != null ? `<div class="val-row"><span class="lbl">EV/EBITDA</span><span>${{m.ev_ebitda}}x</span></div>` : ''}}
     </div>
     <div class="val-grid" style="margin-top:6px;">
       <div class="val-row"><span class="lbl">PER 위치</span>${{lab('per', true)}}</div>
@@ -1725,6 +1805,250 @@ if ('serviceWorker' in navigator) {{
   }}).catch(() => {{}});
 }}
 </script>
+<script>
+// ===== Phase 1~3 신설 패널 렌더 =====
+(function() {{
+  const N = (typeof NEW === 'object') ? NEW : {{}};
+  const $ = (id) => document.getElementById(id);
+  const colorPct = (v) => v == null ? 'var(--muted)' : (v > 0 ? '#16a34a' : (v < 0 ? '#dc2626' : 'var(--muted)'));
+  const fmtPct = (v) => v == null ? '-' : (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+  const fmtInt = (v) => v == null ? '-' : v.toLocaleString();
+  const fmtNum = (v, p) => v == null ? '-' : v.toFixed(p == null ? 2 : p);
+
+  // 1. 매크로 카드 그리드
+  const macroItems = (N.macro && N.macro.items) || [];
+  if (macroItems.length) {{
+    $('macroSection').style.display = '';
+    $('macroGrid').innerHTML = macroItems.map(it => {{
+      const d1 = it.d1, d5 = it.d5, d20 = it.d20;
+      return `<div style="background:var(--panel2);padding:8px 10px;border-radius:8px;border:1px solid var(--line);">
+        <div style="font-size:11px;color:var(--muted);">${{it.category || ''}} · ${{it.name}}</div>
+        <div style="font-size:16px;font-weight:600;margin:2px 0;">${{fmtNum(it.current)}}${{it.unit||''}}</div>
+        <div style="font-size:11px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="color:${{colorPct(d1)}}">D1 ${{fmtPct(d1)}}</span>
+          <span style="color:${{colorPct(d5)}}">D5 ${{fmtPct(d5)}}</span>
+          <span style="color:${{colorPct(d20)}}">D20 ${{fmtPct(d20)}}</span>
+        </div>
+      </div>`;
+    }}).join('');
+  }}
+
+  // 2. 시장 수급 (최근 5일)
+  const fm = (N.flows_market && N.flows_market.rows) || [];
+  if (fm.length) {{
+    $('flowsSection').style.display = '';
+    const recent = fm.slice(0, 5);
+    let html = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--line);text-align:right;color:var(--muted);">
+        <th style="text-align:left;padding:4px;">날짜</th>
+        <th style="padding:4px;">개인</th><th style="padding:4px;">외인</th><th style="padding:4px;">기관</th>
+      </tr></thead><tbody>`;
+    let sum = {{ind:0, fr:0, inst:0}};
+    recent.forEach(r => {{
+      sum.ind += (r.individual||0); sum.fr += (r.foreign||0); sum.inst += (r.institute||0);
+      html += `<tr><td style="padding:4px;">${{r.date}}</td>
+        <td style="text-align:right;color:${{colorPct(r.individual)}};">${{fmtInt(r.individual)}}</td>
+        <td style="text-align:right;color:${{colorPct(r.foreign)}};">${{fmtInt(r.foreign)}}</td>
+        <td style="text-align:right;color:${{colorPct(r.institute)}};">${{fmtInt(r.institute)}}</td></tr>`;
+    }});
+    html += `<tr style="border-top:1px solid var(--line);font-weight:600;">
+      <td style="padding:4px;">5일 누적</td>
+      <td style="text-align:right;color:${{colorPct(sum.ind)}};">${{fmtInt(sum.ind)}}</td>
+      <td style="text-align:right;color:${{colorPct(sum.fr)}};">${{fmtInt(sum.fr)}}</td>
+      <td style="text-align:right;color:${{colorPct(sum.inst)}};">${{fmtInt(sum.inst)}}</td>
+    </tr></tbody></table>`;
+    $('flowsTable').innerHTML = html;
+  }}
+
+  // 3. 유망주 발굴
+  const P = N.prospects || {{}};
+  const renderProspect = (key) => {{
+    const list = P[key] || [];
+    if (!list.length) {{ $('prospectsList').innerHTML = '<li style="padding:12px;color:var(--muted);">데이터 없음</li>'; return; }}
+    $('prospectsList').innerHTML = list.map((r, i) => {{
+      const s = r.scores || {{}};
+      const m = r.metrics || {{}};
+      return `<li onclick="if(typeof openStock==='function') openStock('${{r.t}}')" style="cursor:pointer;padding:8px 12px;border-bottom:1px solid var(--line);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><span style="color:var(--muted);font-size:11px;">${{i+1}}.</span> <b>${{r.n}}</b> <span style="font-size:11px;color:var(--muted);">${{r.i||''}}</span></div>
+          <div style="font-weight:600;color:${{r.total>0?'#16a34a':'#dc2626'}};">${{r.total>0?'+':''}}${{r.total}}</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:8px;">
+          <span>펀더 ${{s.fund}}</span><span>기술 ${{s.tech}}</span><span>모멘텀 ${{s.mom}}</span><span>수급 ${{s.flow}}</span><span>섹터 ${{s.sec}}</span>
+          ${{m.ret_5d!=null?`<span>5일 ${{fmtPct(m.ret_5d)}}</span>`:''}}
+          ${{m.roe!=null?`<span>ROE ${{m.roe}}%</span>`:''}}
+          ${{m.pfr!=null?`<span>PFR ${{m.pfr}}</span>`:''}}
+        </div>
+      </li>`;
+    }}).join('');
+  }};
+  if ((P.top_30 || []).length) {{
+    $('prospectsSection').style.display = '';
+    renderProspect('top_30');
+    document.querySelectorAll('#prospectsSection .tab').forEach(b => {{
+      b.addEventListener('click', () => {{
+        document.querySelectorAll('#prospectsSection .tab').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        renderProspect(b.dataset.prospect);
+      }});
+    }});
+  }}
+
+  // 4. 섹터 로테이션
+  const R = (N.sector_rotation && N.sector_rotation.sectors) || [];
+  if (R.length) {{
+    $('rotationSection').style.display = '';
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="border-bottom:1px solid var(--line);color:var(--muted);text-align:right;">
+        <th style="text-align:left;padding:4px;">섹터</th>
+        <th style="padding:4px;">1주</th><th style="padding:4px;">1개월</th><th style="padding:4px;">3개월</th><th style="padding:4px;">1년</th><th style="padding:4px;">모멘텀</th>
+      </tr></thead><tbody>`;
+    R.slice(0, 30).forEach(s => {{
+      html += `<tr><td style="padding:4px;">${{s.name}}</td>
+        <td style="text-align:right;color:${{colorPct(s.ret_1w)}};">${{fmtPct(s.ret_1w)}}</td>
+        <td style="text-align:right;color:${{colorPct(s.ret_1m)}};">${{fmtPct(s.ret_1m)}}</td>
+        <td style="text-align:right;color:${{colorPct(s.ret_3m)}};">${{fmtPct(s.ret_3m)}}</td>
+        <td style="text-align:right;color:${{colorPct(s.ret_1y)}};">${{fmtPct(s.ret_1y)}}</td>
+        <td style="text-align:right;font-weight:600;color:${{colorPct(s.momentum_score)}};">${{fmtPct(s.momentum_score)}}</td></tr>`;
+    }});
+    html += '</tbody></table>';
+    $('rotationTable').innerHTML = html;
+  }}
+
+  // 5. 어닝 서프라이즈 (서프라이즈 + 발표후 주가반응)
+  const E = (N.earnings_surprise && N.earnings_surprise.top_positive) || [];
+  const ER = (N.earnings_surprise && N.earnings_surprise.top_reaction) || [];
+  if (E.length || ER.length) {{
+    $('earningsSection').style.display = '';
+    const list = ER.length ? ER : E;  // 주가반응 데이터 있으면 우선
+    $('earningsList').innerHTML = list.slice(0, 15).map((r, i) => {{
+      const dateTag = r.announce_date ? `<span style="font-size:11px;color:var(--muted);">발표 ${{r.announce_date}}</span>` : '';
+      const reactTag = r.price_reaction_pct != null
+        ? `<span style="font-size:11px;font-weight:600;color:${{r.price_reaction_pct>0?'#16a34a':'#dc2626'}};">${{r.price_reaction_pct>0?'+':''}}${{r.price_reaction_pct}}% (발표후 5거래일)</span>`
+        : '';
+      return `<li onclick="if(typeof openStock==='function') openStock('${{r.t}}')" style="cursor:pointer;padding:8px 12px;border-bottom:1px solid var(--line);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><span style="color:var(--muted);font-size:11px;">${{i+1}}.</span> <b>${{r.n}}</b> <span style="font-size:11px;color:var(--muted);">${{r.q_period||''}}</span></div>
+          <div style="font-weight:600;color:#16a34a;">+${{r.surprise_pct}}%</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span>실적 ${{fmtInt(r.op_q)}} vs 추정 ${{fmtInt(r.op_q_est)}} (백만원)</span>
+          ${{dateTag}}
+        </div>
+        ${{reactTag ? `<div style="margin-top:4px;">${{reactTag}}</div>` : ''}}
+      </li>`;
+    }}).join('');
+  }}
+
+  // ===== 3-탭 (시황 / 발굴 / 추적) =====
+  const TAB_SECTIONS = {{
+    market:   ['overviewSection', 'macroSection', 'flowsSection', 'rotationSection', 'earningsSection', 'sec-sectors', 'sec-stocks'],
+    discover: ['prospectsSection', 'recoSection', 'pfrSection', 'buySection', 'categorySection'],
+    track:    ['reportsSection', 'calendarSection', 'historySection'],
+  }};
+  function sectionTab(sec) {{
+    const id = sec.id || (sec.querySelector('a[id^="sec-"]') ? sec.querySelector('a[id^="sec-"]').id : '');
+    for (const t in TAB_SECTIONS) {{
+      if (TAB_SECTIONS[t].includes(id)) return t;
+    }}
+    return null;
+  }}
+  function applyTab(active) {{
+    document.querySelectorAll('#mainPanel .section').forEach(sec => {{
+      const t = sectionTab(sec);
+      if (t == null) return;
+      if (t === active) {{
+        // 원래 표시 상태로 복귀
+        if (sec.dataset.tabOrigDisplay !== undefined) {{
+          sec.style.display = sec.dataset.tabOrigDisplay;
+          delete sec.dataset.tabOrigDisplay;
+        }}
+      }} else {{
+        // 다른 탭은 강제 숨김 (원래 상태 보존)
+        if (sec.dataset.tabOrigDisplay === undefined) {{
+          sec.dataset.tabOrigDisplay = sec.style.display || '';
+        }}
+        sec.style.display = 'none';
+      }}
+    }});
+    document.querySelectorAll('#tabBar button').forEach(b => {{
+      b.classList.toggle('active', b.dataset.tab === active);
+    }});
+    // nav-menu 필터
+    document.querySelectorAll('#navMenu a').forEach(a => {{
+      a.style.display = (a.dataset.belongs === active) ? '' : 'none';
+    }});
+    // 검색 결과가 보이는 동안엔 mainPanel 토글 불필요 — 검색은 별개
+  }}
+  // 탭 클릭
+  document.querySelectorAll('#tabBar button').forEach(b => {{
+    b.addEventListener('click', () => applyTab(b.dataset.tab));
+  }});
+  // nav-menu 링크 클릭 시 자동 탭 전환
+  document.querySelectorAll('#navMenu a').forEach(a => {{
+    a.addEventListener('click', (e) => {{
+      const belong = a.dataset.belongs;
+      if (belong && belong !== document.querySelector('#tabBar button.active').dataset.tab) {{
+        applyTab(belong);
+      }}
+      // hash 이동은 브라우저 기본 동작에 맡김
+    }});
+  }});
+  // 초기: 시황 탭. 단, 다른 탭 섹션도 데이터 렌더링이 완료될 시간을 약간 줘야 함.
+  setTimeout(() => applyTab('market'), 50);
+
+  // ===== PWA 폰 업데이트 UX =====
+  // 1. 빌드 버전 변경 감지 → toast
+  try {{
+    const LAST_KEY = 'st_last_build_ts';
+    const prev = localStorage.getItem(LAST_KEY);
+    if (prev && prev !== BUILD_TS) {{
+      const toast = $('updateToast');
+      if (toast) {{
+        toast.textContent = `새 데이터 반영됨 (v${{BUILD_TS}})`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+      }}
+    }}
+    localStorage.setItem(LAST_KEY, BUILD_TS);
+  }} catch (e) {{}}
+
+  // 2. 강제 새로고침 버튼 — 캐시 비우기 + SW unregister + reload
+  const refBtn = $('forceRefreshBtn');
+  if (refBtn) {{
+    refBtn.addEventListener('click', async () => {{
+      refBtn.disabled = true;
+      refBtn.textContent = '...';
+      try {{
+        // SW 캐시 모두 삭제
+        if (window.caches) {{
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }}
+        // SW unregister
+        if (navigator.serviceWorker) {{
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(r => r.unregister()));
+        }}
+        // localStorage 버전키 리셋 (다음 로드에서 toast)
+        localStorage.removeItem('st_last_build_ts');
+      }} catch (e) {{}}
+      // 하드 리로드 (브라우저 캐시 우회를 위해 ?_=ts 쿼리)
+      location.replace(location.pathname + '?_=' + Date.now() + location.hash);
+    }});
+  }}
+
+  // 3. 페이지 visibility change 시 SW update 강제 (탭/앱 복귀 시 즉시 최신 확인)
+  document.addEventListener('visibilitychange', () => {{
+    if (document.visibilityState === 'visible' && navigator.serviceWorker) {{
+      navigator.serviceWorker.getRegistration().then(reg => {{
+        if (reg) reg.update().catch(() => {{}});
+      }}).catch(() => {{}});
+    }}
+  }});
+}})();
+</script>
+
 </body>
 </html>
 """
@@ -1750,6 +2074,22 @@ def build() -> None:
     cal = _load_json(CALENDAR, {})
     buy_timing = _load_json(BUY_TIMING, {})
     per_hist = _load_per_history()
+    # Phase 1~3 신설 데이터
+    macro_d = _load_json(MACRO, {})
+    flows_market = _load_json(FLOWS_MARKET, {})
+    flows_stock = _load_json(FLOWS_STOCK, {})
+    prospects = _load_json(PROSPECTS, {})
+    sector_rotation = _load_json(SECTOR_ROTATION, {})
+    earnings_surprise = _load_json(EARNINGS_SURPRISE, {})
+    # window.NEW 로 통합 (HTML 템플릿 안에서 단일 변수로 참조)
+    new_bundle = {
+        "macro": macro_d,
+        "flows_market": flows_market,
+        "flows_stock": flows_stock,
+        "prospects": prospects,
+        "sector_rotation": sector_rotation,
+        "earnings_surprise": earnings_surprise,
+    }
 
     build_ts = datetime.now().strftime("%Y%m%d%H%M%S")
     html = HTML_TEMPLATE.format(
@@ -1770,6 +2110,7 @@ def build() -> None:
         per_hist_json=json.dumps(per_hist, ensure_ascii=False),
         calendar_json=json.dumps(cal, ensure_ascii=False),
         buy_timing_json=json.dumps(buy_timing, ensure_ascii=False),
+        new_bundle_json=json.dumps(new_bundle, ensure_ascii=False),
         build_ts=build_ts,
     )
     OUT.write_text(html, encoding="utf-8")

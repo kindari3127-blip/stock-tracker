@@ -22,6 +22,7 @@ except Exception:
 HERE = Path(__file__).parent
 FUND = HERE / "data" / "fundamentals.csv"
 SEARCH = HERE / "data" / "search_index.json"
+CASHFLOW = HERE / "data" / "cashflow.csv"
 OUT = HERE / "data" / "valuation.json"
 
 
@@ -40,6 +41,19 @@ def build() -> None:
     search = json.loads(SEARCH.read_text(encoding="utf-8"))
     px_map = {s["t"]: s for s in search.get("stocks", [])}
 
+    # FCF + 감가상각비 (cashflow.csv) — EBITDA·FCF Yield 보강
+    fcf_map: dict[str, float] = {}
+    depr_map: dict[str, float] = {}
+    if CASHFLOW.exists():
+        cf = pd.read_csv(CASHFLOW, dtype={"ticker": str})
+        cf["ticker"] = cf["ticker"].str.zfill(6)
+        cf = cf.drop_duplicates(subset=["ticker"], keep="first")
+        cf_fcf = cf[cf["fcf"].notna()]
+        fcf_map = dict(zip(cf_fcf["ticker"], cf_fcf["fcf"].astype(float)))
+        if "depr" in cf.columns:
+            cf_d = cf[cf["depr"].notna()]
+            depr_map = dict(zip(cf_d["ticker"], cf_d["depr"].astype(float)))
+
     rows: list[dict] = []
     for _, r in fund.iterrows():
         t = r["ticker"]
@@ -57,6 +71,38 @@ def build() -> None:
         if revenue and revenue > 0 and mcap > 0:
             psr = round(mcap / (revenue * 1_000_000), 2)
 
+        # FCF Yield = FCF / 시총  (cashflow.csv 의 fcf 단위는 원)
+        fcf = fcf_map.get(t)
+        fcf_yield = None
+        if fcf and mcap > 0:
+            fcf_yield = round(fcf / mcap * 100, 2)  # %
+
+        # EV/EBITDA (근사) — EBITDA = 영업이익(연간, 억원→원) + 감가상각비(원)
+        #   EV = 시총 + 부채. 부채 ≈ 자본총계 × debt_ratio/100. 현금차감 못해 보수적.
+        #   자본총계 ≈ bps × 발행주식수, 발행주식수 ≈ 시총/주가
+        #   금융업(은행·보험·증권 등)은 EBITDA 개념이 의미 없어 제외
+        ev_ebitda = None
+        industry = (live.get("i") or "").strip()
+        is_financial = any(k in industry for k in ("은행", "보험", "증권", "신용서비스", "다각화된금융"))
+        close = live.get("c") or 0
+        op_annual = _safe(r.get("operating_profit"))  # 네이버 표 단위 = 억원
+        bps = _safe(r.get("bps"))
+        debt_ratio = _safe(r.get("debt_ratio"))  # %
+        depr = depr_map.get(t)  # 원
+        if (not is_financial and mcap > 0 and close > 0 and bps and bps > 0
+                and debt_ratio is not None and op_annual is not None
+                and depr is not None
+                and not pd.isna(op_annual) and not pd.isna(depr) and not pd.isna(bps) and not pd.isna(debt_ratio)):
+            shares = mcap / close
+            equity = bps * shares  # 원
+            debt = equity * (debt_ratio / 100) if debt_ratio > 0 else 0
+            ev = mcap + debt
+            ebitda = op_annual * 100_000_000 + depr  # 억원→원 + depr(원)
+            if ebitda > 0:
+                cand = ev / ebitda
+                if 0 < cand < 100 and not pd.isna(cand):
+                    ev_ebitda = round(cand, 2)
+
         eps_growth = None
         if eps is not None and eps > 0 and eps_est is not None:
             eps_growth = round((eps_est / eps - 1) * 100, 2)
@@ -73,6 +119,8 @@ def build() -> None:
             "psr": psr, "peg": peg, "op_margin": op_margin,
             "eps": eps, "eps_est": eps_est, "eps_growth": eps_growth,
             "revenue": revenue,
+            "fcf_yield": fcf_yield,
+            "ev_ebitda": ev_ebitda,
         })
 
     df = pd.DataFrame(rows)
@@ -140,11 +188,8 @@ def build() -> None:
         out_items[r["t"]] = {
             "industry": ind,
             "industry_n": stats.get("n"),
-            "metrics": {
-                "per": r["per"], "pbr": r["pbr"], "psr": r["psr"],
-                "peg": r["peg"], "roe": r["roe"], "op_margin": r["op_margin"],
-                "eps_growth": r["eps_growth"],
-            },
+            "metrics": {k: (None if pd.isna(r[k]) else (round(float(r[k]), 2) if isinstance(r[k], (int, float)) else r[k]))
+                        for k in ["per", "pbr", "psr", "peg", "roe", "op_margin", "eps_growth", "fcf_yield", "ev_ebitda"]},
             "industry_med": {
                 "per": round(stats["per_med"], 2) if stats.get("per_med") else None,
                 "pbr": round(stats["pbr_med"], 2) if stats.get("pbr_med") else None,

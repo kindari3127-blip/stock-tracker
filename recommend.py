@@ -29,7 +29,7 @@ OUT_CHART = HERE / "data" / "chart_data.json"
 
 DAYS = 60
 MIN_BARS = 30
-CHART_POOL_TOP_N = 500
+CHART_POOL_TOP_N = 1500  # 2026-05-22: 발굴 풀 KRX 전체 시총 상위까지 확장
 
 
 def _z(series: pd.Series) -> pd.Series:
@@ -99,6 +99,7 @@ def build() -> None:
                 chart[t] = {
                     "dates": [d.strftime("%Y%m%d") for d in df.index],
                     "closes": [int(c) for c in closes],
+                    "volumes": [int(v) for v in volumes],
                 }
 
             if t not in fund_tickers:

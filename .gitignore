@@ -12,3 +12,7 @@ data/log.txt
 # 로컬 임시
 *.tmp
 *.bak
+tmp/
+
+# deploy 산출물 (OneDrive 밖 ~/.stock-tracker-deploy 로 옮김 — 옛 폴더 잔재)
+.deploy/

@@ -39,7 +39,7 @@ CF_OUT = DATA / "cashflow.csv"
 CORP_MAP = DATA / "corp_code_map.json"
 
 DART_BASE = "https://opendart.fss.or.kr/api"
-MARCAP_MIN = 1000 * 1e8  # 1,000억 미만은 PFR 변동 심해 제외
+MARCAP_MIN = 500 * 1e8  # 500억 이상 (2026-05-21 확장: 1,000억 → 500억)
 
 # DART 표준 IFRS 계정 ID
 ACC_OCF = "ifrs-full_CashFlowsFromUsedInOperatingActivities"
@@ -94,8 +94,9 @@ def load_corp_map(key: str, force: bool = False) -> dict[str, str]:
     return mapping
 
 
-def fetch_cf(key: str, corp_code: str, year: int) -> tuple[float | None, float | None, float | None]:
-    """(ocf, capex_ppe, capex_int). fs_div CFS 우선, 없으면 OFS 폴백."""
+def fetch_cf(key: str, corp_code: str, year: int) -> tuple[float | None, float | None, float | None, float | None]:
+    """(ocf, capex_ppe, capex_int, depr_amort). fs_div CFS 우선, 없으면 OFS 폴백.
+    depr_amort: CF 표의 감가상각비·무형자산상각비 합계 (account_nm 키워드 매칭, 중복 제거)."""
     for fs in ("CFS", "OFS"):
         url = f"{DART_BASE}/fnlttSinglAcntAll.json"
         params = {
@@ -109,17 +110,20 @@ def fetch_cf(key: str, corp_code: str, year: int) -> tuple[float | None, float |
             r = requests.get(url, params=params, timeout=15)
             d = r.json()
         except Exception:
-            return None, None, None
+            return None, None, None, None
         if d.get("status") != "000":
             continue
         items = d.get("list", [])
         if not items:
             continue
         ocf = capex_ppe = capex_int = None
+        depr_vals: list[float] = []
+        depr_seen_nm: set[str] = set()
         for it in items:
             if it.get("sj_div") != "CF":
                 continue
             aid = it.get("account_id", "")
+            nm = (it.get("account_nm") or "").strip()
             amt = it.get("thstrm_amount", "").replace(",", "").strip()
             if not amt or amt in ("-", ""):
                 continue
@@ -133,9 +137,17 @@ def fetch_cf(key: str, corp_code: str, year: int) -> tuple[float | None, float |
                 capex_ppe = val
             elif aid == ACC_CAPEX_INT:
                 capex_int = val
+            else:
+                # 감가상각 / 상각비 항목 (CF 표의 가산 항목): account_nm 키워드 매칭
+                nm_l = nm.lower()
+                if (("감가상각" in nm or "상각비" in nm or "depreciat" in nm_l or "amortis" in nm_l)
+                        and nm not in depr_seen_nm):
+                    depr_vals.append(abs(val))  # CF 표 가산 항목은 양수
+                    depr_seen_nm.add(nm)
         if ocf is not None:
-            return ocf, capex_ppe, capex_int
-    return None, None, None
+            depr = sum(depr_vals) if depr_vals else None
+            return ocf, capex_ppe, capex_int, depr
+    return None, None, None, None
 
 
 def main() -> None:
@@ -185,7 +197,7 @@ def main() -> None:
         job = p.add_task("DART 현금흐름 수집", total=len(pool))
         for ticker, name, sector, marcap in pool:
             corp_code = corp_map.get(ticker)
-            ocf, ppe, intang = fetch_cf(key, corp_code, fy)
+            ocf, ppe, intang, depr = fetch_cf(key, corp_code, fy)
             if ocf is None:
                 failed.append((sector, ticker, name))
                 p.advance(job)
@@ -205,6 +217,7 @@ def main() -> None:
                 "capex_intangible": intang,
                 "capex": capex,
                 "fcf": fcf,
+                "depr": depr,  # 감가상각비 (CF 표 가산 합계)
                 "marcap": marcap,
                 "pfr": round(pfr, 2) if pfr else None,
             })
