@@ -60,6 +60,15 @@ def copy_files():
                 if f.is_file() and f.suffix == ".json":
                     shutil.copy(f, target / f.name)
 
+    # market_daily 뉴스 페이지 (카카오톡 뉴스 발송 링크 대상) → /news/
+    news_src = Path(r"C:\Scripts\market_daily\web\news")
+    if news_src.exists():
+        news_dst = DEPLOY / "news"
+        news_dst.mkdir(exist_ok=True)
+        for f in news_src.iterdir():
+            if f.is_file():
+                shutil.copy(f, news_dst / f.name)
+
     (DEPLOY / ".nojekyll").touch()
     (v2 / ".nojekyll").touch()
 

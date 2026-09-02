@@ -41,7 +41,7 @@ python view.py 5 반도체 # '반도체' 포함 섹터만
 
 1. `작업 스케줄러` → `기본 작업 만들기`
 2. 트리거: 매일, 장 마감 후 (예: 18:00)
-3. 동작: 프로그램 시작 → `C:\Users\kinda\OneDrive\바탕 화면\주식추적기\run.bat`
+3. 동작: 프로그램 시작 → `C:\Users\kinda\Desktop\주식추적기\run.bat`
 
 ## 데이터 컬럼
 

@@ -1,7 +1,7 @@
 # WIP — 주식추적기
 
 **목표:** 한국 주식시장 68개 세분화 섹터 × 대표주 3종(204쌍, 고유 203종목) 종가 일별 누적
-**경로:** `C:\Users\kinda\OneDrive\바탕 화면\주식추적기\`
+**경로:** `C:\Users\kinda\Desktop\프로젝트\주식추적기\` (2026-06 `프로젝트\` 하위로 이동)
 **GitHub:** https://github.com/kindari3127-blip/stock-tracker
 **Pages:** https://kindari3127-blip.github.io/stock-tracker/report.html (PWA, 휴대폰 홈)
 **메모리:** project_stock_tracker.md
@@ -24,10 +24,15 @@
   - **analysis_daily.bat 편입**: recommend → prospects + valuation → earnings_surprise (오후 분석에 발굴·갭 갱신).
   - **report.html UI 통합** (2,062 KB, +1,000 KB): 신설 섹션 5개 — 매크로 카드 그리드(D1/D5/D20 색상 표시) / 시장 수급 5일 표(개인·외인·기관 + 누적) / 유망주 발굴(5탭) / 섹터 로테이션 4타임프레임 표 / 어닝 서프라이즈 TOP. window.NEW 단일 변수로 던지고 자체 IIFE 렌더러 — 기존 코드 무회귀.
 - **deploy 경로 OneDrive 밖으로 분리 (2026-05-21)**: `.deploy/` → `C:\Users\kinda\.stock-tracker-deploy\`. OneDrive Files On-Demand 의 ReparsePoint + ReadOnly 잠금으로 `shutil.rmtree` 가 PermissionError(WinError 5) 를 던져 2026-05-21 05:00 / 17:30 자동 실행 두 번 모두 gh-pages push 실패한 상태였음. `deploy.py` 의 `DEPLOY` 상수 변경 + `clean_deploy()` 에 `onerror` 핸들러(`stat.S_IWRITE` 로 read-only 해제 후 재시도) 추가. 수동 2회 실행으로 init → 재배포 정상 확인. (옛 `.deploy/` 폴더는 OneDrive 잠금으로 수동 삭제 불가 — 그대로 두면 무해, 정리하려면 OneDrive 일시정지 후 `attrib -r /s /d` 필요)
-- **작업 스케줄러 2개 체계 운영 (2026-05-16 확정)**
+- **작업 스케줄러 3개 체계 운영**
   - `주식추적기` (월~금 05:00): 전체 파이프라인 (collect → fundamentals → cashflow → 분석 → AI → 배포)
   - `주식추적기_분석` (월~금 17:30): 빠른 분석 갱신 (build_data → recommend → buy_timing → 배포). **강세섹터·강세종목·추천종목·매수타이밍** 장마감 당일 데이터 반영.
-  - 재등록 필요 시: `powershell -ExecutionPolicy Bypass -File setup_analysis_task.ps1`
+  - `주식추적기_장중` (월~금 09:00~15:45, **15분마다**, 2026-06-02 신설): 장중 시세·지수·수급·섹터강도만 빠르게 갱신 → report 재생성 → gh-pages 배포. **폰에서 새로고침하면 최신 반영.** `intraday.bat` = collect → collect_extra → flows → macro → build_data → report_html → deploy (약 95초, **Claude 호출 없음**).
+    - 발굴(recommend/prospects/valuation 등)은 개별 1500+종목 FDR 호출로 10~20분 걸려 장중 주기에서 제외 — 발굴 결과는 05:00/17:30 full 실행이 계산. 장중엔 가격 계열만 갱신.
+    - **주의**: `intraday.bat`도 auto.bat처럼 **BOM 없이 영문 주석만** 유지할 것. 한글 주석 넣으면 cmd가 0xFF로 즉사함(2026-06-02 실제 발생).
+    - 폰 새로고침 즉시 반영되는 이유: sw.js가 network-first(`cache:"no-cache"`)라 항상 서버 최신본 fetch + deploy.py가 매 배포마다 sw.js 버전 갱신.
+  - **2026-06-02 경로 이동 이슈**: 폴더가 `프로젝트\` 하위로 이동되면서 기존 작업 스케줄러 2건이 옛 경로 .bat을 가리켜 5/23~5/29 LastResult 0x1 무한 실패(업데이트 중단). 두 작업 경로 수정으로 해결. **폴더 이동 시 작업 스케줄러 경로도 같이 수정 필수.**
+  - 재등록 필요 시: `powershell -ExecutionPolicy Bypass -File setup_analysis_task.ps1` (분석 작업)
 - **구 문제 해결**: 스케줄러가 "매주 월요일 05:00"으로 잘못 설정되어 있던 것을 "월~금 05:00"으로 수정 (2026-05-14 LastResult=0xC000013A Ctrl+C 강제종료 확인)
 - auto.bat: collect.py + report_html.py --no-open + git push
 - 변경 없으면 commit 건너뜀

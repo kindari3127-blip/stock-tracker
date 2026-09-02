@@ -16,3 +16,6 @@ tmp/
 
 # deploy 산출물 (OneDrive 밖 ~/.stock-tracker-deploy 로 옮김 — 옛 폴더 잔재)
 .deploy/
+
+# intraday.bat 15분 주기 로그 (48k줄, 계속 자람)
+data/intraday_log.txt
